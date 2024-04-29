@@ -42,7 +42,7 @@ To ensure users can smoothly use the GreenLightPlus package in combination with 
 
 ## Prerequisites: Installing EnergyPlus
 
-To run the EnergyPlus-combined simulations in the GreenLightPlus package, you need to have EnergyPlus installed on your system. The following steps will guide you through downloading and installing EnergyPlus on a Linux system.
+To run the EnergyPlus-combined simulations in the GreenLightPlus package, you need to have EnergyPlus installed on your system. 
 
 ### Download and Install
 

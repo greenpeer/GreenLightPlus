@@ -49,7 +49,7 @@ GreenLightPlus 旨在帮助用户更高效地设计和管理温室，实现能�
 
 ## 前提条件：安装 EnergyPlus
 
-为了运行 GreenLightPlus 包中的 EnergyPlus 结合模拟，您需要在您的系统中安装 EnergyPlus。以下步骤将指导您如何在 Linux 系统上下载和安装 EnergyPlus。
+为了运行 GreenLightPlus 包中的 EnergyPlus 结合模拟，您需要在您的系统中安装 EnergyPlus。
 
 ### 下载和安装
 
