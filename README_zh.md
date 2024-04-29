@@ -6,14 +6,28 @@
 
 # GreenLightPlus
 
-GreenLightPlus 是一个用于温室环境模拟和能耗产量分析的 ToolKit，它结合了原始的 GreenLight 模型和 EnergyPlus 模拟工具，以研究不同温室结构的能耗和产出。
 
-## 特性
+GreenLightPlus 是一个用于温室环境模拟和能耗产量优化的 Python 工具包，基于 David Katzin 的 MATLAB 版 [GreenLight](https://github.com/davkat1/GreenLight) 模型开发。与原始模型相比，GreenLightPlus 提供了以下改进和扩展：
 
-- **模拟与分析**: 提供完整的温室环境模拟和能源消耗分析。
-- **多样的温室结构**: 支持生成六种不同的温室几何结构。
-- **强化学习环境**: 包括一个为温室控制任务定制的强化学习环境。
-- **集成模拟**: 将 GreenLight 模型与 EnergyPlus 模拟相结合，为不同的温室配置提供深入的能耗和产出研究。
+- 将原始模型从 MATLAB 移植到 Python，提高了可访问性和可扩展性。
+- 支持生成多种不同类型的温室几何结构，便于对比分析。
+- 集成 EnergyPlus 模拟功能，实现更精确的能耗计算。
+- 内置强化学习环境，可使用 AI 算法优化温室控制策略。
+
+GreenLightPlus 旨在帮助用户更高效地设计和管理温室，实现能源优化和作物产量提升。通过使用该工具包，用户可以探索不同的温室设计方案，评估其能耗表现，并使用先进的优化算法找到最佳的控制策略，提高温室的经济和环境效益。
+
+
+## 主要功能
+
+- **全面的温室环境模拟**：GreenLightPlus 提供了完整的温室环境模拟功能，包括温度、湿度、光照、CO2 浓度等关键参数的动态变化，以及作物生长过程的模拟。
+
+- **灵活的温室几何建模**：该工具包支持生成六种常见的不同类型的温室几何结构，包括三角形、半圆形、平拱形、哥特式拱形、锯齿形和锯齿拱形，用户可以根据需求选择合适的结构进行分析。
+
+- **强化学习优化策略**：GreenLightPlus 内置了一个专门为温室控制任务定制的强化学习环境，用户可以利用该环境训练 AI 模型，自动学习最优的温室控制策略，提高能源利用效率和作物产量。
+
+- **能耗分析与产量预测**：通过与 EnergyPlus 的集成，GreenLightPlus 可以对不同温室配置进行详细的能耗分析，并基于环境条件和控制策略预测作物产量，为温室设计和运营提供重要依据。
+  
+
 
 ## 核心模块
 
@@ -408,3 +422,6 @@ for episode in tqdm(range(250)):  # 训练250个周期
 ## 许可
 
 本项目采用 GNU GPLv3 许可证，详情请见 `LICENSE` 文件。
+
+## 参考文献
+David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. "GreenLight - An Open Source Model for Greenhouses with Supplemental Lighting: Evaluation of Heat Requirements under LED and HPS Lamps." Biosystems Engineering 194: 61–81. https://doi.org/10.1016/j.biosystemseng.2020.03.010

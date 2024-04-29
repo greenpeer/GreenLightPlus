@@ -4,14 +4,24 @@
 
 # GreenLightPlus
 
-GreenLightPlus is a ToolKit for greenhouse environment simulation and energy consumption-yield analysis. It combines the original GreenLight model and the EnergyPlus simulation tool to investigate the energy consumption and output of different greenhouse structures.
+GreenLightPlus is a Python toolkit for greenhouse environment simulation and energy consumption and yield optimization, developed based on David Katzin's MATLAB version of the [GreenLight](https://github.com/davkat1/GreenLight) model. Compared to the original model, GreenLightPlus provides the following improvements and extensions:
 
-## Features
+- Ported the original model from MATLAB to Python, improving accessibility and extensibility.
+- Supports the generation of various greenhouse geometric structures for comparative analysis.
+- Integrates EnergyPlus simulation functionality for more accurate energy consumption calculations.
+- Includes a built-in reinforcement learning environment that can be used with AI algorithms to optimize greenhouse control strategies.
 
-- **Simulation and Analysis**: Provides comprehensive greenhouse environment simulation and energy consumption analysis.
-- **Diverse Greenhouse Structures**: Supports generating six different greenhouse geometries.
-- **Reinforcement Learning Environment**: Includes a customized reinforcement learning environment for greenhouse control tasks.
-- **Integrated Simulation**: Combines the GreenLight model with EnergyPlus simulations, offering in-depth energy consumption and yield research for different greenhouse configurations.
+GreenLightPlus aims to help users design and manage greenhouses more efficiently, achieving energy optimization and crop yield enhancement. By using this toolkit, users can explore different greenhouse design options, evaluate their energy performance, and employ advanced optimization algorithms to find the best control strategies, improving the economic and environmental benefits of the greenhouse.
+
+## Key Features
+
+- **Comprehensive Greenhouse Environment Simulation**: GreenLightPlus provides a complete greenhouse environment simulation, including the dynamic changes of key parameters such as temperature, humidity, light, and CO2 concentration, as well as the simulation of crop growth processes.
+
+- **Flexible Greenhouse Geometric Modeling**: The toolkit supports the generation of six common types of greenhouse geometric structures, including triangular, semi-circular, flat arch, Gothic arch, sawtooth, and sawtooth arch. Users can choose the appropriate structure for analysis based on their requirements.
+
+- **Reinforcement Learning Optimization Strategies**: GreenLightPlus includes a built-in reinforcement learning environment specifically designed for greenhouse control tasks. Users can utilize this environment to train AI models that automatically learn optimal greenhouse control strategies, improving energy utilization efficiency and crop yield.
+
+- **Energy Consumption Analysis and Yield Prediction**: Through integration with EnergyPlus, GreenLightPlus can perform detailed energy consumption analyses for different greenhouse configurations and predict crop yields based on environmental conditions and control strategies, providing important information for greenhouse design and operation.
 
 ## Core Modules
 
@@ -395,6 +405,7 @@ This example code demonstrates how to use Ray RLlib and the PPO algorithm to tra
 
 Checkpoints will be saved periodically during the training process, and the current training results will be printed. These results help users evaluate the algorithm's performance and iteratively optimize the greenhouse management strategies.
 
+
 ## Contributing
 
 Contributions through Pull Requests or Issues for feature enhancements or bug reports are welcome.
@@ -402,3 +413,6 @@ Contributions through Pull Requests or Issues for feature enhancements or bug re
 ## License
 
 This project is licensed under the GNU GPLv3 License. See the `LICENSE` file for details.
+
+## References
+David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. "GreenLight - An Open Source Model for Greenhouses with Supplemental Lighting: Evaluation of Heat Requirements under LED and HPS Lamps." Biosystems Engineering 194: 61–81. https://doi.org/10.1016/j.biosystemseng.2020.03.010
