@@ -238,7 +238,21 @@ This example code demonstrates how to use the GreenLightModel class to run green
 
 #### Result Display
 
-The `plot_green_light` function will generate a chart displaying the changes in environmental parameters inside and outside the greenhouse, such as temperature, humidity, CO2 concentration, as well as lighting and heating energy consumption. This will help users evaluate the effectiveness of the simulation and optimize the greenhouse design.
+
+The `plot_green_light` function generates a comprehensive figure displaying the changes in environmental parameters and crop growth dynamics within the simulated greenhouse. The figure includes the following subplots:
+
+1. Indoor and outdoor temperature in degrees Celsius ($^\circ\mathrm{C}$).
+2. Indoor and outdoor vapor pressure in Pascals ($\mathrm{Pa}$).
+3. Indoor and outdoor relative humidity as a percentage ($\%$).
+4. Indoor and outdoor CO2 concentration in both milligrams per cubic meter ($\mathrm{mg\,m^{-3}}$) and parts per million ($\mathrm{ppm}$).
+5. Outdoor global solar radiation, PAR (Photosynthetically Active Radiation) above the canopy from both sun and lamps, lamp electric input, and PAR above the canopy from sun and lamps separately, all in Watts per square meter ($\mathrm{W\,m^{-2}}$).
+6. PPFD (Photosynthetic Photon Flux Density) from the sun and lamps in micromoles of PAR per square meter per second ($\mathrm{\mu mol\,(PAR)\,m^{-2}\,s^{-1}}$).
+7. Net assimilation of CO2, net photosynthesis, growth respiration, and maintenance respiration in milligrams per square meter per second ($\mathrm{mg\,m^{-2}\,s^{-1}}$).
+8. Fruit, stem, and leaf dry weight in milligrams of CH2O per square meter ($\mathrm{mg\,(CH_2O)\,m^{-2}}$), buffer content also in $\mathrm{mg\,(CH_2O)\,m^{-2}}$, and LAI (Leaf Area Index) in square meters per square meter ($\mathrm{m^2\,m^{-2}}$).
+9. Fruit dry weight in milligrams of CH2O per square meter ($\mathrm{mg\,(CH_2O)\,m^{-2}}$) and fruit harvest in milligrams of CH2O per square meter per second ($\mathrm{mg\,(CH_2O)\,m^{-2}\,s^{-1}}$).
+10. Various temperature states of the greenhouse components in degrees Celsius ($^\circ\mathrm{C}$).
+
+
 
 ![alt text](image-1.png)
 
