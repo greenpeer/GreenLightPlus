@@ -1,95 +1,93 @@
-
+## Languages
+- [English](README.md)
+- [中文](README_zh.md)
 
 # GreenLightPlus
 
-GreenLightPlus 是一个用于温室环境模拟和能耗产量分析的 ToolKit，它结合了原始的 GreenLight 模型和 EnergyPlus 模拟工具，以研究不同温室结构的能耗和产出。
+GreenLightPlus is a ToolKit for greenhouse environment simulation and energy consumption-yield analysis. It combines the original GreenLight model and the EnergyPlus simulation tool to investigate the energy consumption and output of different greenhouse structures.
 
-## 特性
+## Features
 
-- **模拟与分析**: 提供完整的温室环境模拟和能源消耗分析。
-- **多样的温室结构**: 支持生成六种不同的温室几何结构。
-- **强化学习环境**: 包括一个为温室控制任务定制的强化学习环境。
-- **集成模拟**: 将 GreenLight 模型与 EnergyPlus 模拟相结合，为不同的温室配置提供深入的能耗和产出研究。
+- **Simulation and Analysis**: Provides comprehensive greenhouse environment simulation and energy consumption analysis.
+- **Diverse Greenhouse Structures**: Supports generating six different greenhouse geometries.
+- **Reinforcement Learning Environment**: Includes a customized reinforcement learning environment for greenhouse control tasks.
+- **Integrated Simulation**: Combines the GreenLight model with EnergyPlus simulations, offering in-depth energy consumption and yield research for different greenhouse configurations.
 
-## 核心模块
+## Core Modules
 
-- `green_light_model.py` - 实现基于 Python 的 GreenLight 模型，用于温室环境模拟。
-- `greenhouse_env.py` - 定义了用于强化学习的温室环境类。
-- `greenhouse_geometry.py` - 用于生成不同温室结构的几何模型。
-- `greenlight_energyplus_simulation.py` - 结合 GreenLight 模型和 EnergyPlus 进行模拟分析。
+- `green_light_model.py` - Implements the Python-based GreenLight model for greenhouse environment simulation.
+- `greenhouse_env.py` - Defines the greenhouse environment class for reinforcement learning.
+- `greenhouse_geometry.py` - Used to generate geometric models for different greenhouse structures.
+- `greenlight_energyplus_simulation.py` - Combines the GreenLight model and EnergyPlus for simulation and analysis.
 
-## 辅助模块
+## Auxiliary Modules
 
-- `create_green_light_model/` - 包含创建和设置 GreenLight 模型的核心函数。
-- `result_analysis/` - 提供模拟结果分析的函数，包括能源分析和结果展示。
-- `service_functions/` - 提供单位转换和其他服务功能的函数库。
+- `create_green_light_model/` - Contains core functions for creating and setting up the GreenLight model.
+- `result_analysis/` - Provides functions for analyzing simulation results, including energy analysis and result visualization.
+- `service_functions/` - Provides a function library for unit conversions and other service functionalities.
 
-
-为确保用户可以顺利使用 GreenLightPlus 包结合 EnergyPlus 进行模拟，我们需要提供详尽的指南来指导他们下载和安装 EnergyPlus。以下是如何下载和安装 EnergyPlus 的步骤，以及如何获取必要的天气文件，这可以被包含在 README 文件中：
+To ensure users can smoothly use the GreenLightPlus package in combination with EnergyPlus for simulations, we need to provide detailed guidance on downloading and installing EnergyPlus. Here are the steps for downloading and installing EnergyPlus, as well as obtaining the necessary weather files, which can be included in the README:
 
 ---
 
-## 前提条件：安装 EnergyPlus
+## Prerequisites: Installing EnergyPlus
 
-为了运行 GreenLightPlus 包中的 EnergyPlus 结合模拟，您需要在您的系统中安装 EnergyPlus。以下步骤将指导您如何在 Linux 系统上下载和安装 EnergyPlus。
+To run the EnergyPlus-combined simulations in the GreenLightPlus package, you need to have EnergyPlus installed on your system. The following steps will guide you through downloading and installing EnergyPlus on a Linux system.
 
-### 下载和安装
+### Download and Install
 
-1. **下载 EnergyPlus**: 使用 `wget` 命令从官方 GitHub 存储库下载 EnergyPlus 的 Linux 版本。
+1. **Download EnergyPlus**: Use the `wget` command to download the Linux version of EnergyPlus from the official GitHub repository.
 
    ```bash
    wget https://github.com/NREL/EnergyPlus/releases/download/v23.2.0/EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu22.04-x86_64.tar.gz
    ```
-    您可以访问 [NREL EnergyPlus GitHub 页面](https://github.com/NREL/EnergyPlus) 选择适合您操作系统的最新版本。
-    
+   You can visit the [NREL EnergyPlus GitHub page](https://github.com/NREL/EnergyPlus) to select the latest version suitable for your operating system.
 
-2. **解压缩文件**: 使用 `tar` 命令解压下载的文件。
+2. **Extract the File**: Use the `tar` command to extract the downloaded file.
 
    ```bash
    tar -xzvf EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu22.04-x86_64.tar.gz
    ```
 
-3. **移动解压缩的文件夹**: 将解压缩后的文件夹移动到合适的位置，例如名为 `EnergyPlus` 的文件夹。
+3. **Move the Extracted Folder**: Move the extracted folder to a suitable location, e.g., a folder named `EnergyPlus`.
 
    ```bash
    mv EnergyPlus-23.2.0-7636e6b3e9-Linux-Ubuntu22.04-x86_64 EnergyPlus
    ```
 
-### 获取天气文件
+### Get Weather Files
 
-EnergyPlus 模拟需要特定地点的天气文件。以下是如何下载 Amsterdam 的 EPW 天气文件：
+EnergyPlus simulations require weather files for specific locations. Here's how to download the EPW weather file for Amsterdam:
 
 ```bash
 wget https://energyplus-weather.s3.amazonaws.com/europe_wmo_region_6/NLD/NLD_Amsterdam.062400_IWEC/NLD_Amsterdam.062400_IWEC.epw
 ```
 
-将此文件移动到您的项目目录或指定的文件夹中，确保在运行模拟时正确指定文件路径。
+Move this file to your project directory or a specified folder, ensuring the correct file path when running simulations.
 
-更多天气文件可以从 [EnergyPlus Weather Database](https://energyplus.net/weather) 下载，您可以根据需要选择适合您项目地点的文件。
+More weather files can be downloaded from the [EnergyPlus Weather Database](https://energyplus.net/weather), where you can select files suitable for your project's location.
 
-
-##  安装
+## Installation
 
 ```bash
 pip install GreenLightPlus
 ```
 
-## 使用教程
+## Usage Guide
 
-### 1.使用 GreenLightPlus 创建温室几何文件
+### 1. Using GreenLightPlus to Create Greenhouse Geometry Files
 
-GreenLightPlus 包允许用户创建不同类型屋顶的温室几何模型，以支持环境模拟。以下是如何使用 `GreenhouseGeometry` 类来生成不同屋顶类型的温室。
+The GreenLightPlus package allows users to create greenhouse geometrical models with different roof types to support environment simulations. Here's how to use the `GreenhouseGeometry` class to generate greenhouses with various roof types.
 
-#### 快速开始
+#### Quick Start
 
-首先，您需要从 GreenLightPlus 导入 `GreenhouseGeometry` 类。然后，您可以指定多种屋顶类型，并为每种类型生成一个温室模型。
-
+First, you need to import the `GreenhouseGeometry` class from GreenLightPlus. Then, you can specify different roof types and generate a greenhouse model for each type.
 
 ```python
 from GreenLightPlus import GreenhouseGeometry
 
 if __name__ == "__main__":
-    # 定义不同的屋顶类型
+    # Define different roof types
     roof_types = [
         "triangle",
         "half_circle",
@@ -101,17 +99,17 @@ if __name__ == "__main__":
 
     for roof_type in roof_types:
         print(f"Creating greenhouse with {roof_type} roof")
-        # 设置温室的基本参数
-        wall_height = 6.5  # 脊高 {m}
-        wall_width = 4     # 每段屋顶的宽度 {m}
-        wall_length = 1.67 # 温室长度 {m}
-        num_segments = 6   # 屋顶的段数
-        slope = 22         # 屋顶倾斜角度 {°}
-        number_length = 10 # 长度方向的温室数量
-        number_width = 10  # 宽度方向的温室数量
-        time_step = 60     # 时间步长（分钟）
+        # Set basic greenhouse parameters
+        wall_height = 6.5  # Ridge height {m}
+        wall_width = 4     # Width of each roof segment {m}
+        wall_length = 1.67 # Greenhouse length {m}
+        num_segments = 6   # Number of roof segments
+        slope = 22         # Roof slope angle {°}
+        number_length = 10 # Number of greenhouses in length direction
+        number_width = 10  # Number of greenhouses in width direction
+        time_step = 60     # Time step (minutes)
 
-        # 创建 GreenhouseGeometry 实例
+        # Create a GreenhouseGeometry instance
         greenhouse_model = GreenhouseGeometry(
             roof_type=roof_type,
             slope=slope,
@@ -134,27 +132,27 @@ if __name__ == "__main__":
             end_day=7,
         )
 
-        # 生成温室模型
+        # Generate the greenhouse model
         greenhouse_model.create_houses()
 ```
 
-#### 功能描述
+#### Functionality Description
 
-通过上述代码，您可以创建不同类型屋顶的温室几何模型。这些模型可以用于进一步的环境模拟和能耗分析。您可以调整 `GreenhouseGeometry` 类的参数来适配您的特定需求，例如修改温室的尺寸、屋顶类型、或者模拟的时间范围。
+With the above code, you can create greenhouse geometrical models with different roof types. These models can be used for further environment simulations and energy consumption analysis. You can adjust the parameters of the `GreenhouseGeometry` class to suit your specific needs, such as modifying the greenhouse dimensions, roof type, or the simulation time range.
 
-此功能是理解和使用 GreenLightPlus 包的基础，适用于需要对不同温室设计进行预先模拟和分析的用户。
+This functionality is the foundation for understanding and using the GreenLightPlus package, suitable for users who need to perform preliminary simulations and analyses on different greenhouse designs.
 
+#### Result Display
 
+![alt text](image-2.png)
 
+### 2. Using GreenLightPlus to Run the Original GreenLight Model and Plot Results
 
-### 2.使用 GreenLightPlus 运行原始 GreenLight 模型并绘制结果
+The GreenLightPlus package allows users to run greenhouse simulations using the original GreenLight model and analyze and visualize the results. Here are detailed steps on how to set simulation parameters, run the simulation, and use the `plot_green_light` function to display the results.
 
-GreenLightPlus 包允许用户使用原始 GreenLight 模型进行温室模拟，并分析及可视化结果。以下是如何设置模拟参数，运行模拟，并使用 `plot_green_light` 函数显示结果的详细步骤。
+#### Quick Start
 
-#### 快速开始
-
-首先，从 GreenLightPlus 包中导入必要的模块和函数。
-
+First, import the necessary modules and functions from the GreenLightPlus package.
 
 ```python
 from GreenLightPlus import (
@@ -164,116 +162,108 @@ from GreenLightPlus import (
     plot_green_light,
 )
 
-# 设置生长周期和模型运行的时间间隔
-season_length = 7  # 生长周期, 可以是天数的分数
-season_interval = 7  # 每次模型运行的时间间隔，可以是天数的分数，例如 1/24/4 表示15分钟
-first_day = 91  # 生长周期的第一天的日期
+# Set the growing season length and time interval for the model run
+season_length = 7  # Growing season, can be a fraction of days
+season_interval = 7  # Time interval for each model run, can be a fraction of days, e.g., 1/24/4 for 15 minutes
+first_day = 91  # Date of the first day of the growing season
 
-# 创建 GreenLightModel 实例
+# Create a GreenLightModel instance
 model = GreenLightModel(first_day=first_day, isMature=False, epw_path="NLD_Amsterdam.062400_IWEC.epw")
 
-# 初始化模型状态
+# Initialize the model state
 init_state = {
     "p": {
-        # 温室结构设置
-        'psi': 22,  # 温室覆盖坡度 [度]
-        'aFlr': 4e4,  # 地板面积 [m^2]
-        # 其他参数略...
+        # Greenhouse structure settings
+        'psi': 22,  # Greenhouse covering slope [degrees]
+        'aFlr': 4e4,  # Floor area [m^2]
+        # Other parameters omitted...
     }
 }
 
-# 根据设置的生长周期和时间间隔运行模型
+# Run the model based on the set growing season and time interval
 for current_step in range(int(season_length // season_interval)):
     gl = model.run_model(gl_params=init_state, season_length=season_length, season_interval=season_interval, step=current_step)
     init_state = gl
-    dmc = 0.06  # 干物质转换系数
+    dmc = 0.06  # Dry matter conversion coefficient
 
-    # 计算并打印当前产量
+    # Calculate and print the current yield
     current_yield = 1e-6 * calculate_energy_consumption(gl, 'mcFruitHar') / dmc
     print(f"current yield is {current_yield} kg/m2")
 
-# 可视化模拟结果
+# Visualize the simulation results
 plot_green_light(gl)
 ```
 
-#### 功能描述
+#### Functionality Description
 
-此示例代码展示了如何使用 GreenLightModel 类来运行温室环境模拟。通过循环遍历生长周期，模拟每一步的环境变化，并使用 `calculate_energy_consumption` 函数来评估能耗和产量。最终，使用 `plot_green_light` 函数可视化整个模拟过程的结果，展示温室内的多种环境参数随时间的变化。
+This example code demonstrates how to use the GreenLightModel class to run greenhouse environment simulations. By looping through the growing season, the simulation steps through the environmental changes, and the `calculate_energy_consumption` function is used to evaluate energy consumption and yield. Finally, the `plot_green_light` function visualizes the results of the entire simulation process, showing the changes in various environmental parameters inside the greenhouse, such as temperature, humidity, CO2 concentration, and lighting and heating energy consumption over time.
 
-#### 结果展示
+#### Result Display
 
-`plot_green_light` 函数将生成一个图表，展示温室内部和外部的温度、湿度、CO2 浓度等环境参数的变化，以及照明和加热的能耗。这将帮助用户评估模拟的有效性和温室设计的优化。
+The `plot_green_light` function will generate a chart displaying the changes in environmental parameters inside and outside the greenhouse, such as temperature, humidity, CO2 concentration, as well as lighting and heating energy consumption. This will help users evaluate the effectiveness of the simulation and optimize the greenhouse design.
 
+![alt text](image-1.png)
 
+### 3. Using GreenLightPlus to Run Combined GreenLight and EnergyPlus Simulations
 
-现在我们要添加有关如何结合运行 GreenLight 和 EnergyPlus 模拟的部分。这将指导用户如何利用这两个工具的强大功能进行温室环境的能耗和产量模拟。以下是为 README 文件撰写的详细说明和代码示例：
+GreenLightPlus integrates the GreenLight model and EnergyPlus, providing higher accuracy greenhouse environment simulations and more detailed energy consumption analyses.
 
----
+#### Quick Start
 
-### 3.使用 GreenLightPlus 结合 GreenLight 和 EnergyPlus 进行模拟
-
-GreenLightPlus 整合了 GreenLight 模型和 EnergyPlus，提供温室环境模拟的更高精度和更细致的能耗分析。
-
-#### 快速开始
-
-首先，确保您已将 EnergyPlus 安装目录添加到 Python 模块的搜索路径中。然后从 GreenLightPlus 包导入所需的模块和功能。
-
+First, ensure that you have added the EnergyPlus installation directory to the Python module search path. Then, import the required modules and functions from the GreenLightPlus package.
 
 ```python
 import sys
-# 添加EnergyPlus安装目录到Python模块搜索路径
+# Add the EnergyPlus installation directory to the Python module search path
 sys.path.insert(0, "./EnergyPlus")
 
 from GreenLightPlus import GreenhouseSimulation, convert_epw2csv
 from pyenergyplus.api import EnergyPlusAPI
 
 if __name__ == "__main__":
-    # 创建EnergyPlus API对象
+    # Create an EnergyPlus API object
     api = EnergyPlusAPI()
 
-    # 设置天气文件和模型文件的路径
+    # Set the paths for the weather file and model file
     epw_path = "NLD_Amsterdam.062400_IWEC.epw"
     idf_path = "data/model_files/greenhouse_half_circle.idf"
 
-    # 将EPW天气文件转换为CSV文件，便于处理
+    # Convert the EPW weather file to a CSV file for easier processing
     csv_path = convert_epw2csv(epw_path=epw_path, time_step=1)
 
-    # 设置输出目录
+    # Set the output directory
     output_directory = "data/energyPlus/outputs"
 
-    # 设置模拟的起始日期和天数
+    # Set the start date and number of days for the simulation
     first_day = 91
     season_length = 7
 
-    # 创建GreenhouseSimulation类的实例
+    # Create an instance of the GreenhouseSimulation class
     simulation = GreenhouseSimulation(api, epw_path, idf_path, csv_path, output_directory, first_day, season_length, isMature=True)
 
-    # 运行模拟
+    # Run the simulation
     simulation.run()
 
-    # 获取模拟结果
+    # Get the simulation results
     total_yield, lampIn, boilIn = simulation.get_results()
     print(f"Total yield: {total_yield} kg/m2, Lamp input: {lampIn} MJ/m2, Boiler input: {boilIn} MJ/m2\n")
 ```
 
-#### 功能描述
+#### Functionality Description
 
-此示例代码展示了如何使用 `GreenhouseSimulation` 类和 EnergyPlus API 运行结合了 GreenLight 模型与 EnergyPlus 的温室环境模拟。此模拟将使用 EnergyPlus 进行详细的能耗分析，同时结合 GreenLight 提供的作物生长和环境控制模型。
+This example code demonstrates how to use the `GreenhouseSimulation` class and the EnergyPlus API to run greenhouse environment simulations that combine the GreenLight model with EnergyPlus. This simulation will use EnergyPlus for detailed energy consumption analysis, while incorporating the crop growth and environmental control models provided by GreenLight.
 
-#### 结果展示
+#### Result Display
 
-模拟完成后，将输出总产量、照明输入和锅炉输入的统计信息。这些数据帮助用户评估温室设计和控制策略的效果，以及其对能耗和产量的影响。
+After the simulation is completed, statistics on total yield, lighting input, and boiler input will be output. This data helps users evaluate the effectiveness of the greenhouse design and control strategies, as well as their impact on energy consumption and yield.
 
+### 4. Using GreenLightPlus for Reinforcement Learning Optimization of Greenhouse Management
 
+The GreenLightPlus package integrates a reinforcement learning environment, allowing users to utilize reinforcement learning algorithms (such as PPO) to optimize greenhouse management and operation strategies. Here are the steps to configure and run PPO training.
 
-### 4.使用 GreenLightPlus 进行强化学习优化温室管理
+#### Quick Start
 
-GreenLightPlus 包集成了强化学习环境，使用户能够使用强化学习算法（如PPO）来优化温室的管理和操作策略。以下是如何配置和运行 PPO 训练的步骤。
-
-#### 快速开始
-
-首先，您需要从 GreenLightPlus 导入 `GreenhouseEnv` 环境，并配置 Ray RLlib 的 PPO 算法。
-
+First, you need to import the `GreenhouseEnv` environment from GreenLightPlus and configure the PPO algorithm from Ray RLlib.
 
 ```python
 import sys
@@ -284,61 +274,60 @@ from tqdm import tqdm
 import os
 import random
 
-# 配置 RLlib PPO 算法
+# Configure the RLlib PPO algorithm
 config = PPOConfig()
 config.rollouts(num_rollout_workers=1)
 config.resources(num_cpus_per_worker=1)
 config.environment(
         env=GreenhouseEnv,
         env_config={
-            "first_day": 101,  # 一年中的开始日期
-            "epw_path": "NLD_Amsterdam.062400_IWEC.epw",  # 天气文件路径
-            "isMature": False,  # 是否为成熟阶段
-            "season_length": 60,  # 模拟的季节长度
-            "season_interval": 1/24*4,  # 模拟的时间间隔，每6小时
-            "current_step": 0,  # 当前步骤编号
-            "target_yield": 8,  # 目标产量
-            "target_yield_unit_energy_input": 22,  # 目标单位能源投入产量
-            "init_state": {...}  # 初始化状态配置，参考上文提供的详细参数
+            "first_day": 101,  # Start date of the year
+            "epw_path": "NLD_Amsterdam.062400_IWEC.epw",  # Path to the weather file
+            "isMature": False,  # Whether it's the mature stage
+            "season_length": 60,  # Length of the simulated season
+            "season_interval": 1/24*4,  # Time interval for the simulation, every 6 hours
+            "current_step": 0,  # Current step number
+            "target_yield": 8,  # Target yield
+            "target_yield_unit_energy_input": 22,  # Target unit energy input yield
+            "init_state": {...}  # Initial state configuration, refer to the detailed parameters provided above
         },
-        render_env=False  # 是否渲染环境
+        render_env=False  # Whether to render the environment
     )
 config.training(
-        gamma=0.9,  # 折扣因子
-        lr=0.0001,  # 学习率
-        kl_coeff=0.3,  # KL散度系数
+        gamma=0.9,  # Discount factor
+        lr=0.0001,  # Learning rate
+        kl_coeff=0.3,  # KL divergence coefficient
         model={
-            "fcnet_hiddens": [256, 256],  # 隐藏层配置
-            "fcnet_activation": "relu",  # 激活函数
-            "use_lstm": True,  # 是否使用LSTM
-            "max_seq_len": 48,  # 最大序列长度
+            "fcnet_hiddens": [256, 256],  # Hidden layer configuration
+            "fcnet_activation": "relu",  # Activation function
+            "use_lstm": True,  # Whether to use LSTM
+            "max_seq_len": 48,  # Maximum sequence length
         }
     )
 
-# 构建算法对象
+# Build the algorithm object
 algo = config.build()
 
-# 训练算法
-for episode in tqdm(range(250)):  # 训练250个周期
-    result = algo.train()  # 进行训练
-    if episode % 5 == 0:  # 每5个周期保存一次检查点
+# Train the algorithm
+for episode in tqdm(range(250)):  # Train for 250 episodes
+    result = algo.train()  # Perform training
+    if episode % 5 == 0:  # Save a checkpoint every 5 episodes
         checkpoint_dir = algo.save().checkpoint.path
         print(f"Checkpoint saved in directory {checkpoint_dir}")
 ```
 
-#### 功能描述
+#### Functionality Description
 
-此示例代码展示了如何使用 Ray RLlib 和 PPO 算法来训练一个强化学习模型，该模型针对温室环境进行优化。通过调整环境参数和训练设置，可以探索不同的策略以提高温室的能效和作物产量。
+This example code demonstrates how to use Ray RLlib and the PPO algorithm to train a reinforcement learning model for greenhouse environment optimization. By adjusting the environment parameters and training settings, you can explore different strategies to improve the greenhouse's energy efficiency and crop yield.
 
-#### 结果展示
+#### Result Display
 
-训练过程中将定期保存检查点，并打印出当前训练结果。这些结果帮助用户评估算法的性能，并对温室的管理策略进行迭代优化。
+Checkpoints will be saved periodically during the training process, and the current training results will be printed. These results help users evaluate the algorithm's performance and iteratively optimize the greenhouse management strategies.
 
-## 贡献
+## Contributing
 
-欢迎通过 Pull Requests 或 Issues 提供功能增强或报告问题。
+Contributions through Pull Requests or Issues for feature enhancements or bug reports are welcome.
 
-## 许可
+## License
 
-本项目采用 MIT 许可证，详情请见 `LICENSE` 文件。
-
+This project is licensed under the GNU GPLv3 License. See the `LICENSE` file for details.
