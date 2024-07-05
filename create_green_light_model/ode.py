@@ -1,3 +1,4 @@
+# GreenLightPlus/GreenLightPlus/create_green_light_model/ode.py
 """
 Copyright Statement:
 
@@ -15,117 +16,118 @@ Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
 
-
+# Import necessary modules and functions
 from ..service_functions.funcs import *
 from .set_gl_aux import set_gl_aux
 from .set_gl_control import set_gl_control
 from .set_gl_odes import set_gl_odes
 import copy
 import numpy as np
-np.seterr(invalid="ignore", over="ignore")
-
+np.seterr(invalid="ignore", over="ignore")  # Set numpy to ignore invalid and overflow warnings
 
 class ODESolver:
-    def __init__(self, d, u, gl):
-        # Create interpolation functions for each column of d
+    def __init__(self, u, gl):
+        """
+        Initialize the ODESolver class
+        :param u: Control variable matrix
+        :param gl: GreenLight model instance
+        """
         self.gl = gl  # Store the entire GreenLight model instance
-        self.d = d  # Store the entire uncontrolled variables matrix
-        self.u = u  # Store the entire control data variables matrix
-        self.prev_gl = {}  # Store the previous GreenLight model instance
-        self.d_keys = list(gl["d"].keys())
+        self.d = self.convert_dict_to_array(self.gl['d']).copy()  # Convert 'd' dict to array and copy
+        self.u = u  # Store the control variable matrix
+        self.prev_gl = {}  # Initialize dict to store previous GreenLight model instance
+
+    def convert_dict_to_array(self, data_dict):
+        """
+        Convert dictionary data to a 2D NumPy array
+        :param data_dict: Dictionary containing the data
+        :return: Converted 2D NumPy array
+        """
+        keys = list(data_dict.keys())  # Get all keys of the dictionary
+        num_rows = data_dict[keys[0]].shape[0]  # Get number of rows from the first array
+        
+        # Check if all arrays have the same number of rows
+        for key in keys:
+            if data_dict[key].shape[0] != num_rows:
+                raise ValueError("All arrays must have the same number of rows")
+        
+        # Build the result array
+        result_array = data_dict[keys[0]]
+        for key in keys[1:]:
+            result_array = np.hstack((result_array, data_dict[key][:, 1:]))
+        
+        return result_array
 
     def sample_d(self, t):
-        """Sample data at time t, handling edges."""
+        """
+        Sample uncontrollable factor data at time t, handling boundary cases
+        :param t: Sampling time
+        :return: Sampling result
+        """
         if t <= self.d[0, 0]:
-            # print("Warning: t is less than the first time point in the data matrix.")
-            # Use first row if t is less than the first time point
-            return self.d[0, 1:]
+            return self.d[0, 1:]  # If t is less than or equal to the minimum time, return the first row of data
         elif t >= self.d[-1, 0]:
-            # print("Warning: t is greater than the last time point in the data matrix.")
-            # Use last row if t is greater than the last time point
-            return self.d[-1, 1:]
+            return self.d[-1, 1:]  # If t is greater than or equal to the maximum time, return the last row of data
         else:
-            # Use interpolation for each column
+            # Perform linear interpolation for each column
             return np.array([np.interp(t, self.d[:, 0], self.d[:, k]) for k in range(1, self.d.shape[1])])
 
-    def sample_u(self, t, u):
-        """Sample predefined controls at time t, handling edges."""
-        if t <= u[0, 0]:
-            # Use first row if t is less than the first time point
-            return u[0, 1:]
-        elif t >= u[-1, 0]:
-            # Use last row if t is greater than the last time point
-            return u[-1, 1:]
+    def sample_u(self, t):
+        """
+        Sample predefined control variables at time t, handling boundary cases
+        :param t: Sampling time
+        :return: Sampling result
+        """
+        if t <= self.u[0, 0]:
+            return self.u[0, 1:]  # If t is less than or equal to the minimum time, return the first row of data
+        elif t >= self.u[-1, 0]:
+            return self.u[-1, 1:]  # If t is greater than or equal to the maximum time, return the last row of data
         else:
-            # Use interpolation for each column
-            u_sample = np.empty(u.shape[1] - 1)
-            for k in range(1, u.shape[1]):
-                if not np.isnan(u[0, k]):
-                    u_sample[k - 1] = np.interp(t, u[:, 0], u[:, k])
-                else:
-                    u_sample[k - 1] = np.nan
-            return u_sample
+            # Perform linear interpolation for each column
+            return np.array([np.interp(t, self.u[:, 0], self.u[:, k]) for k in range(1, self.u.shape[1])])
 
     def ode(self, t, x):
         """
-        Solve a system of ODEs.
-
-        Args:
-            t (float): Current time step.
-            x (np.ndarray): Array of current values of the dependent variables.
-            gl (dict): Dictionary containing the current values of the independent variables, as well as any constants.
-
-        Returns:
-            list: List of the values of the ODEs at the current time step.
+        Solve the system of ordinary differential equations
+        :param t: Current time step
+        :param x: Array of current dependent variables
+        :return: List of ODE values at the current time step
         """
-        # Update the values in the dictionary
+        # Update x values in the gl dictionary
         self.gl["x"].update(zip(self.gl["x"].keys(), x))
 
-        # Sample inputs at time t, d is uncontrolled factors, such as outdoor weather conditions
+        # Sample uncontrollable factors at time t
         d_sample = self.sample_d(t)
- 
-        # Update the values in the dictionary
-        self.gl["d"] = {key: value for key,
-                        value in zip(self.d_keys, d_sample)}
+        self.gl["d"] = {key: value for key, value in zip(list(self.gl["d"].keys()), d_sample)}
 
-        # If controls are provided, sample them at time t
+        # If control variables are provided, sample them at time t
         if self.u is not None:
-            # Sample controls at time t, u is controlled factors, such as heating, cooling, lighting, etc.
-            u_sample = self.sample_u(t, self.u)
-            # Update the values in the dictionary
-            self.gl["u"].update(zip(self.gl["u"].keys(), u_sample))
+            u_sample = self.sample_u(t)
+            self.gl["u"] = {key: value for key, value in zip(list(self.gl["u"].keys()), u_sample)}
 
-        # Check if any of the values in the dictionary is inf, which may cause the ODE solver to fail
+        # Check if specific variables are inf and replace with previous value
         keys_to_check = ["tBlScr", "tThScr", "tIntLamp", "tCovIn", "time"]
-        values_to_check = np.array([self.gl["x"][key]
-                                   for key in keys_to_check])
-
-        # Check if any of the values is inf
+        values_to_check = np.array([self.gl["x"][key] for key in keys_to_check])
         inf_indices = np.isinf(values_to_check)
-
-        # If any of the values is inf, replace it with the previous value
+        
         if np.any(inf_indices):
             for idx, key in enumerate(keys_to_check):
                 if inf_indices[idx]:
                     self.gl["x"][key] = self.prev_gl["x"][key]
 
-        # Calculate values of auxiliary variables, a
-        set_gl_aux(self.gl)
+        # Initialize values of auxiliary variables
+        self.gl = set_gl_aux(self.gl)
 
-        # Calculate values of rule-based controls, u
-        set_gl_control(self.gl)
+        # Calculate values of rule-based control variables
+        self.gl = set_gl_control(self.gl)
 
-        # Calculate values of auxiliary variables, a
-        set_gl_aux(self.gl)
- 
-        # Calculate values of ODEs
+        # Recalculate values of auxiliary variables
+        self.gl = set_gl_aux(self.gl)
+
+        # Calculate ODE values
         dx_list = set_gl_odes(self.gl)
 
         # Update prev_gl
-        # use shallow copy instead of deep copy
         self.prev_gl["x"] = self.gl["x"].copy()
-        
-        # print(f'self.gl["a"]["fVentRoof2"]: {self.gl["a"]["fVentRoof2"]}\n')
-
 
         return dx_list

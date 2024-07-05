@@ -1,3 +1,12 @@
+# File path: GreenLightPlus/core/greenlight_energyplus_simulation.py
+"""
+Copyright Statement:
+
+Author: Daidai Qiu
+Author's email: qiu.daidai@outlook.com
+
+This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+"""
 
 from ..service_functions.funcs import calculate_energy_consumption, extract_last_value_from_nested_dict
 from .green_light_model import GreenLightModel

@@ -1,3 +1,5 @@
+# File path: GreenLightPlus/service_functions/funcs.py
+# GreenLightPlus/service_functions/funcs.py
 """
 Copyright Statement:
 
@@ -15,7 +17,6 @@ This code is licensed under the GNU GPLv3 License. For details, see the LICENSE 
 import json
 import os
 import numpy as np
-
 from datetime import datetime
 
 
@@ -279,7 +280,8 @@ def proportionalControl(process_var, set_pt, p_band, min_val, max_val):
     """
 
     np_exp = -2 / p_band * np.log(100) * (process_var - set_pt - p_band / 2)
-
+    # print(f"np_exp: {np_exp}")
+    
     if np_exp > 700:
         # print(f"出现overflow错误 {np_exp}, ctrl = {min_val}")
         ctrl = min_val

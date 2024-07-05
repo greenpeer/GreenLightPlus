@@ -1,3 +1,14 @@
+# File path: GreenLightPlus/core/greenhouse_geometry.py
+"""
+Copyright Statement:
+
+Author: Daidai Qiu
+Author's email: qiu.daidai@outlook.com
+
+This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+"""
+
+
 import openstudio
 import numpy as np
 import os

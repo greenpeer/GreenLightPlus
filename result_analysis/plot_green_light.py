@@ -1,3 +1,4 @@
+# File path: GreenLightPlus/result_analysis/plot_green_light.py
 """
 Copyright Statement:
 
@@ -10,7 +11,7 @@ David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. â
 
 
 New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
+Author's email: qiu.daidai@outlook.com
 
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """

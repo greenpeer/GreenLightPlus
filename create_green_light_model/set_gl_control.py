@@ -1,3 +1,4 @@
+# File path: GreenLightPlus/create_green_light_model/set_gl_control.py
 """
 Copyright Statement:
 
@@ -10,7 +11,7 @@ David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. �
 
 
 New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
+Author's email: qiu.daidai@outlook.com
 
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
@@ -67,5 +68,8 @@ def set_gl_control(gl):
     u["blScr"] = (
         p["useBlScr"] * (1 - d["isDaySmooth"]) * np.maximum(a["lampOn"], a["intLampOn"])
     )
+    
+     # 更新 gl["u"]
+    gl["u"] = u
 
-    # return gl
+    return gl

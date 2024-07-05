@@ -1,3 +1,4 @@
+# File path: GreenLightPlus/create_green_light_model/set_gl_control_init.py
 """
 Copyright Statement:
 
@@ -10,7 +11,7 @@ David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. â
 
 
 New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
+Author's email: qiu.daidai@outlook.com
 
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
@@ -45,7 +46,6 @@ def set_gl_control_init(gl, controls=None):
         # controls = controls.to_numpy()
 
         print("controls is not None")
-        print(controls.shape)
 
         time = controls[:, 0].reshape(-1, 1)
 

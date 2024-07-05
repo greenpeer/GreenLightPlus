@@ -1,3 +1,4 @@
+# File path: GreenLightPlus/create_green_light_model/set_gl_time.py
 """
 Copyright Statement:
 
@@ -10,7 +11,7 @@ David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. Van Henten. 2020. â
 
 
 New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
+Author's email: qiu.daidai@outlook.com
 
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
@@ -20,7 +21,7 @@ import numpy as np
 def set_gl_time(gl):
     """
     Set time phase for a GreenLight greenhouse model.
-    Should be used after the inputs for gl have been defined.
+    Should be used after the weather inputs for gl have been defined.
 
     Args:
         gl: A GreenLight model nested dictionary.

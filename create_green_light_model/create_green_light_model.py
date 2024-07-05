@@ -1,3 +1,5 @@
+# File path: GreenLightPlus/create_green_light_model/create_green_light_model.py
+
 """
 Copyright Statement:
 
@@ -6,26 +8,27 @@ This Python version of the code is based on the open-source Matlab code released
 Original Matlab code author: David Katzin
 Original author's email: david.katzin@wur.nl, david.katzin1@gmail.com
 
-
 New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
+Author's email: qiu.daidai@outlook.com
 
 This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
 
-import numpy as np
-import pandas as pd
-import os
-import json
-import datetime as dt
-from .set_gl_params import set_gl_params
-from .set_gl_input import set_gl_input
-from .set_gl_time import set_gl_time
-from .set_default_lamp_params import set_default_lamp_params
-from .set_gl_control_init import set_gl_control_init
-from .set_gl_init import set_gl_init
-from .set_gl_states import set_gl_states
-from ..service_functions.funcs import *
+# Import necessary libraries
+import numpy as np  # For numerical operations
+import pandas as pd  # For data manipulation and analysis
+import os  # For operating system dependent functionality
+import json  # For JSON operations
+import datetime as dt  # For date and time operations
+
+# Import custom modules
+from .set_gl_params import set_gl_params  # For setting GreenLight parameters
+from .set_gl_weather import set_gl_weather  # For setting GreenLight input
+from .set_gl_time import set_gl_time  # For setting GreenLight time
+from .set_default_lamp_params import set_default_lamp_params  # For setting default lamp parameters
+from .set_gl_control_init import set_gl_control_init  # For initializing GreenLight control
+from .set_gl_states_init import set_gl_states_init  # For initializing GreenLight model
+from ..service_functions.funcs import *  # Import all functions from funcs module
 
 
 def create_green_light_model(lampType, weather, controls=None, indoor=None):
@@ -47,7 +50,7 @@ def create_green_light_model(lampType, weather, controls=None, indoor=None):
         - The lampType must be 'hps', 'led', or ''.
     """
 
-    # Get weather datenum
+    # Extract the first datenum value from the weather data
     weather_datenum = weather[0, 0]
 
     # Convert weather datenum to seconds from start time
@@ -56,27 +59,30 @@ def create_green_light_model(lampType, weather, controls=None, indoor=None):
     # Initialize an empty dictionary for the GreenLight model instance
     gl = {"x": {}, "a": {}, "d": {}, "p": {}, "u": {}}
 
-    # Set lamp type
+    # Set lamp type to lowercase, or 'none' if not provided
     lampType = lampType.lower() if lampType else "none"
 
+    # Initialize indoor conditions list if not provided
     if indoor is None:
         indoor = []
 
-    # Set parameters and nominal values based on the Vanthoor model
+    # Set parameters - p for a GreenLight model instance
     gl = set_gl_params(gl)
-    # Set inputs - d for a GreenLight model instance
-    gl = set_gl_input(gl, weather)
-    # Set time phase
+    
+    # Set Weather Inputs - d for a GreenLight model instance
+    gl = set_gl_weather(gl, weather)
+    
+    # Set Time Phases
     gl = set_gl_time(gl)
-    # Set initial values for the states
-    gl = set_gl_states(gl)
-
-    # Set parameters according to lamp type, hps, led, or none
+        
+    # Set parameters according to lamp type (hps, led, or none)
     gl = set_default_lamp_params(gl, lampType)
+    
     # Set initial values of control variables - u for a GreenLight model instance
     gl = set_gl_control_init(gl, controls)
-
-    # Set initial values for the states
-    gl = set_gl_init(gl, weather_datenum)
-
+    
+    # Set initial values for the states 
+    gl = set_gl_states_init(gl, weather_datenum)
+    
+    # Return the initialized GreenLight model
     return gl
