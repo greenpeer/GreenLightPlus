@@ -16,6 +16,10 @@ GreenLightPlus 是一个用于温室环境模拟和能耗产量优化的 Python 
 
 GreenLightPlus 旨在帮助用户更高效地设计和管理温室，实现能源优化和作物产量提升。通过使用该工具包，用户可以探索不同的温室设计方案，评估其能耗表现，并使用先进的优化算法找到最佳的控制策略，提高温室的经济和环境效益。
 
+## 文档
+
+有关详细的使用说明和示例，请访问我们的文档网站：[文档](https://botanicbyte.com/quickstart)
+
 
 ## 主要功能
 
@@ -184,64 +188,80 @@ from GreenLightPlus import (
     plot_green_light,
 )
 
-# 设置生长周期和模型运行的时间间隔
-season_length = 7  # 生长周期, 可以是天数的分数
-season_interval = 7  # 每次模型运行的时间间隔，可以是天数的分数，例如 1/24/4 表示15分钟
-first_day = 91  # 生长周期的第一天的日期
+# 设置模拟参数
+season_length = 10  # 生长周期长度(天)，可以设置为分数
+season_interval = 10  # 每次模型运行的时间间隔(天)，可以设置为分数，例如 1/24/4 表示15分钟
+first_day = 91  # 生长周期的第一天（一年中的第几天）
 
-# 创建 GreenLightModel 实例
-model = GreenLightModel(first_day=first_day, isMature=False, epw_path="NLD_Amsterdam.062400_IWEC.epw")
+# 创建一个GreenLight模型实例
+# 参数说明：
+# - first_day: 模拟开始的日期（一年中的第几天）
+# - isMature: 表示作物是否已经成熟
+# - epw_path: 气象数据文件的路径
+model = GreenLightModel(first_day=first_day, isMature=True, epw_path="NLD_Amsterdam.062400_IWEC.epw")
 
-# 初始化模型状态
+# 初始化累计变量
+total_yield = 0  # 总产量(kg/m2)
+lampIn = 0  # 照明能耗(MJ/m2)
+boilIn = 0  # 加热能耗(MJ/m2)
+
+# 初始化模型状态和参数
 init_state = {
     "p": {
         # 温室结构设置
-        'psi': 22,  # 温室覆盖物平均倾斜角度 [度]
-        'aFlr': 4e4,  # 地面面积 [平方米]
-        'aCov': 4.84e4,  # 包括侧墙在内的覆盖面积 [平方米]
-        # 主舱高度 [米]（屋脊高度为6.3米）
-        'hAir': 6.3,
-        'hGh': 6.905,  # 温室的平均高度 [米]
-        'aRoof': 0.1169*4e4,  # 最大屋顶通风面积
-        'hVent': 1.3,  # 单个通风口的垂直尺寸 [米]
-        'cDgh': 0.75,  # 通风排气系数 [-]
-        'lPipe': 1.25,  # 管道轨道系统的长度 [米每平方米]
-        # 整个温室的CO2供应速度 [毫克每秒]
-        'phiExtCo2': 7.2e4*4e4/1.4e4,
-        'pBoil': 300*4e4,  # 整个温室的锅炉容量 [瓦特]
+        'psi': 22,  # 温室覆盖平均坡度(度)
+        'aFlr': 4e4,  # 地板面积(m^2)
+        'aCov': 4.84e4,  # 覆盖面积，包括侧墙(m^2)
+        'hAir': 6.3,  # 主要区域高度(m)（山脊高度为6.5m，屏幕在其下方20cm）
+        'hGh': 6.905,  # 温室平均高度(m)
+        'aRoof': 0.1169*4e4,  # 最大屋顶通风面积(m^2)
+        'hVent': 1.3,  # 单个通风口的垂直尺寸(m)
+        'cDgh': 0.75,  # 通风排放系数(无量纲)
+        'lPipe': 1.25,  # 管道轨道系统长度(m/m^2)
+        'phiExtCo2': 7.2e4*4e4/1.4e4,  # 整个温室的CO2注入能力(mg/s)
+        'pBoil': 300*4e4,  # 整个温室的锅炉容量(W)
 
         # 控制设置
-        'co2SpDay': 1000,  # 光照期间的CO2设定点 [ppm]
-        'tSpNight': 18.5,  # 暗期温度设定点 [摄氏度]
-        'tSpDay': 19.5,  # 光照期温度设定点 [摄氏度]
-        'rhMax': 87,  # 最大相对湿度 [%]
-        # 因高温进行通风的P带宽 [摄氏度]
-        'ventHeatPband': 4,
-        # 因高相对湿度进行通风的P带宽 [% 湿度]
-        'ventRhPband': 50,
-        # 因高相对湿度开启遮阳网的P带宽 [% 湿度]
-        'thScrRhPband': 10,
-        'lampsOn': 0,  # 开灯的时间（早上）[小时]
-        'lampsOff': 18,  # 关灯的时间（晚上）[小时]
-        # 如果全球辐射超过此值则关灯 [瓦特每平方米]
-        'lampsOffSun': 400,
-        # 预测的日辐射总量，若达到则当天不使用灯光 [兆焦每平方米每天]
-        'lampRadSumLimit': 10
+        'co2SpDay': 1000,  # 光照期间的CO2设定点(ppm)
+        'tSpNight': 18.5,  # 黑暗期间的温度设定点(°C)
+        'tSpDay': 19.5,  # 光照期间的温度设定点(°C)
+        'rhMax': 87,  # 最大相对湿度(%)
+        'ventHeatPband': 4,  # 高温通风的P-band(°C)
+        'ventRhPband': 50,  # 高相对湿度通风的P-band(% 湿度)
+        'thScrRhPband': 10,  # 高相对湿度屏幕开启的P-band(% 湿度)
+        'lampsOn': 0,  # 灯光开启时间(h)
+        'lampsOff': 18,  # 灯光关闭时间(h)
+        'lampsOffSun': 400,  # 全局辐射超过此值时关闭灯光(W/m^2)
+        'lampRadSumLimit': 10  # 预测的每日太阳辐射总和，低于此值时使用灯光(MJ/m^2/day)
     }
 }
 
-
-# 根据设置的生长周期和时间间隔运行模型
+# 根据生长周期和时间间隔运行模型
 for current_step in range(int(season_length // season_interval)):
-    gl = model.run_model(gl_params=init_state, season_length=season_length, season_interval=season_interval, step=current_step)
+    # 运行模型并获取结果
+    gl = model.run_model(gl_params=init_state, season_length=season_length,
+                         season_interval=season_interval, step=current_step)
     init_state = gl
-    dmc = 0.06  # 干物质转换系数
+    dmc = 0.06  # 干物质含量
 
-    # 计算并打印当前产量
+    # 计算并打印当前产量(kg/m2)
     current_yield = 1e-6 * calculate_energy_consumption(gl, 'mcFruitHar') / dmc
-    print(f"current yield is {current_yield} kg/m2")
+    print(f"当前产量: {current_yield:.2f} kg/m2")
 
-# 可视化模拟结果
+    # 累计果实产量(kg/m2)
+    total_yield += current_yield
+
+    # 计算并累加照明和加热产生的能耗(MJ/m2)
+    lampIn += 1e-6 * calculate_energy_consumption(gl, "qLampIn", "qIntLampIn")
+    boilIn += 1e-6 * calculate_energy_consumption(gl, "hBoilPipe", "hBoilGroPipe")
+
+# 打印最终结果
+print(f"总产量: {total_yield:.2f} kg/m2")
+print(f"照明能耗: {lampIn:.2f} MJ/m2")
+print(f"加热能耗: {boilIn:.2f} MJ/m2")
+print(f"单位能耗: {(lampIn + boilIn)/total_yield:.2f} MJ/kg")
+
+# 绘制模型结果图表
 plot_green_light(gl)
 ```
 
