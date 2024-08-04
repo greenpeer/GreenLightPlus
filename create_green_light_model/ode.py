@@ -26,14 +26,14 @@ import numpy as np
 np.seterr(invalid="ignore", over="ignore")  # Set numpy to ignore invalid and overflow warnings
 
 class ODESolver:
-    def __init__(self, u, gl):
+    def __init__(self, d, u, gl):
         """
         Initialize the ODESolver class
         :param u: Control variable matrix
         :param gl: GreenLight model instance
         """
         self.gl = gl  # Store the entire GreenLight model instance
-        self.d = self.convert_dict_to_array(self.gl['d']).copy()  # Convert 'd' dict to array and copy
+        self.d = d  # Store the entire uncontrolled variables matrix
         self.u = u  # Store the control variable matrix
         self.prev_gl = {}  # Initialize dict to store previous GreenLight model instance
 

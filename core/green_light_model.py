@@ -300,9 +300,9 @@ class GreenLightModel:
 
         # Set the solver method
         solver = "BDF"  # Backward Differentiation Formula
-
+        
         # Create an instance of ODESolver
-        solver_instance = ODESolver(self.u, self.gl)
+        solver_instance = ODESolver(self.d, self.u, self.gl)
 
         # Solve the differential equations and generate the results
         sol = solve_ivp(
@@ -316,6 +316,6 @@ class GreenLightModel:
 
         # Change the time resolution of the results, set the time step, and generate the model results
         self.gl = change_res(self.gl, self.d, sol, time_step)
-
+        
         # Return the simulation results
         return self.gl
