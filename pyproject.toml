@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "GreenLightPlus"
+version = "2.5"
+authors = [
+    {name = "Daidai Qiu", email = "qiu.daidai@outlook.com"}
+]
+description = "Greenhouse Simulation and Optimization Toolkit"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "gymnasium",
+    "openstudio==3.6.1",
+    "gdown",
+    "ray[rllib]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/greenpeer/GreenLightPlus"
+"Bug Reports" = "https://github.com/greenpeer/GreenLightPlus/issues"
+"Source" = "https://github.com/greenpeer/GreenLightPlus"
+
+[project.scripts]
+GreenLightPlus = "GreenLight_Sim.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
