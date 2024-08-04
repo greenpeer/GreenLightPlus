@@ -8,6 +8,7 @@ from scipy.optimize import minimize
 from scipy.interpolate import pchip_interpolate
 import glob
 from typing import Union, Tuple, List, Dict
+from .rh2vapor_dens import rh2vapor_dens
 
 
 def correct_hour_24(time_str):
@@ -33,8 +34,6 @@ def correct_hour_24(time_str):
     else:
         # If the time part is not '24:00', return the original time string
         return time_str
-
-
 
 
 
@@ -279,7 +278,7 @@ def compute_additional_data(epw_data: pd.DataFrame, df: pd.DataFrame) -> Tuple[n
     radSky = epw_data["Horizontal Infrared Radiation Intensity (J/m²)"]
 
     # Compute vapor density using temperature and relative humidity
-    vaporDens = rh2vaporDens(temp, rh)
+    vaporDens = rh2vapor_dens(temp, rh) 
 
     # Compute CO2 density assuming a constant concentration of 410 ppm
     co2 = co2ppm2dens(temp, 410)
