@@ -33,7 +33,7 @@ from ..create_green_light_model.create_green_light_model import create_green_lig
 from ..create_green_light_model.set_dep_params import set_dep_params
 from ..create_green_light_model.change_res import change_res
 from ..create_green_light_model.set_gl_aux import set_gl_aux
-from ..service_functions.convert_epw2csv import convert_epw2csv
+from ..service_functions.convert_epw2csv import convert_epw2csv,check_csv
 
 class GreenLightModel:
     """
@@ -89,17 +89,21 @@ class GreenLightModel:
 
   
     def _get_weather_data_path(self):
-        """
-        Determines the path to the weather data file, converting EPW to CSV if necessary.
+            """
+            Determines the path to the weather data file, converting EPW to CSV if necessary and checking the CSV file.
 
-        Returns:
-            str: The path to the weather data file.
-        """
-        if self.csv_path is None:
-            # Convert EPW file to CSV format if CSV path is not provided
-            return convert_epw2csv(epw_path=self.epw_path, time_step=5)
-        # Return the provided CSV path
-        return self.csv_path
+            Returns:
+                str: The path to the weather data file.
+            """
+            if self.csv_path is None:
+                print("Converting EPW file to CSV format...")
+                print(f"EPW path: {self.epw_path}")
+                # Convert EPW file to CSV format if CSV path is not provided
+                return convert_epw2csv(epw_path=self.epw_path, time_step=5)
+            else:
+                # Check and process the provided CSV file with the desired timestep (e.g., 5 minutes)
+                return check_csv(csv_path=self.csv_path, timestep=5)
+          
 
     def _load_weather_data(self, path, season_length, start_row, end_row):
         """

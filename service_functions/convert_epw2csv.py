@@ -9,6 +9,8 @@ from scipy.interpolate import pchip_interpolate
 import glob
 from typing import Union, Tuple, List, Dict
 from .rh2vapor_dens import rh2vapor_dens
+from .co2_ppm2dens import co2_ppm2dens
+from .rh2vapor_dens import rh2vapor_dens
 
 
 def correct_hour_24(time_str):
@@ -281,7 +283,7 @@ def compute_additional_data(epw_data: pd.DataFrame, df: pd.DataFrame) -> Tuple[n
     vaporDens = rh2vapor_dens(temp, rh) 
 
     # Compute CO2 density assuming a constant concentration of 410 ppm
-    co2 = co2ppm2dens(temp, 410)
+    co2 = co2_ppm2dens(temp, 410)
 
     # Compute sky temperature from sky radiation
     skyT = (radSky / SIGMA) ** 0.25 - KELVIN
@@ -357,7 +359,7 @@ def combine_all_data(epw_data: pd.DataFrame, vaporDens: np.ndarray, co2: np.ndar
     expanded_daily_rad_sum_shifted[-1] = 0  # Set the last value to 0
 
     # Calculate vapor pressure from vapor density and temperature
-    vapor_pressure = vaporDens2pres(
+    vapor_pressure = rh2vapor_dens(
         epw_data["Dry Bulb Temperature (°C)"], vaporDens)
 
     # Create a new DataFrame to combine all weather parameters
@@ -457,7 +459,8 @@ def convert_epw2csv(epw_path: str, time_step: int, out_folder: str = "data/energ
     Returns:
         str: Path to the output CSV file.
     """
-    # Extract filename without extension
+    
+    # # Extract filename without extension
     filename = os.path.splitext(os.path.basename(epw_path))[0]
     output_file = f"{out_folder}/{filename}_{time_step}.csv"
 
@@ -467,7 +470,6 @@ def convert_epw2csv(epw_path: str, time_step: int, out_folder: str = "data/energ
    
     # Create output folder if it doesn't exist
     os.makedirs(out_folder, exist_ok=True)
-    print(f"Converting {epw_path} to {output_file} in { time_step} minutes interval")
 
     # Read and preprocess weather data
     epw_data = read_epw_data(epw_path)
@@ -483,9 +485,13 @@ def convert_epw2csv(epw_path: str, time_step: int, out_folder: str = "data/energ
     # Combine all weather parameters
     data = combine_all_data(epw_data, vaporDens, co2, skyT, soilT, elevation)
 
+    # print("DateTime before: ", data["DateTime"].head())
+    
     # Replace DateTime column with MATLAB datenum
     data["DateTime"] = data["DateTime"].apply(datestr_to_matlab_datenum)
-
+    
+    # print("DateTime after: ", data["DateTime"].head())
+    
     # Save the combined weather data as a new CSV file
     data.to_csv(f"{out_folder}/{filename}.csv", index=False)
 
@@ -499,5 +505,127 @@ def convert_epw2csv(epw_path: str, time_step: int, out_folder: str = "data/energ
 
     # Save the high-resolution weather data as a new CSV file
     hires_data.to_csv(output_file, index=False)
+    
+    print(f"High-resolution weather data saved to: {output_file}")
+
+    return output_file
+
+
+def check_csv(csv_path: str, timestep: int = None, output_folder: str = "data/energyPlus/inputs") -> str:
+    """
+    This function checks and processes the DateTime column in the provided CSV file.
+    It standardizes the DateTime column to the format 'YYYY-MM-DD HH:MM:SS' and, if needed,
+    converts it to MATLAB's datenum format. If a timestep parameter is provided, the function
+    will interpolate the data accordingly. The processed CSV file is saved, and the path
+    to the file is returned.
+
+    Parameters:
+        csv_path (str): The path to the input CSV file.
+        timestep (int, optional): The timestep (in minutes) for output data interpolation.
+                                  If not specified, no interpolation is performed.
+        output_folder (str, optional): The folder path where the processed CSV file will be saved.
+                                       Defaults to "data/energyPlus/inputs".
+
+    Returns:
+        str: The path to the processed CSV file.
+    """
+    
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_path)
+    
+    # Check if the DateTime column exists in the DataFrame
+    if 'DateTime' not in df.columns:
+        raise ValueError("The DateTime column is not found in the CSV file.")
+    
+    # Check if the first value in the DateTime column is already in MATLAB's datenum format
+    first_datetime = df['DateTime'].iloc[0]
+    try:
+        # MATLAB datenum is a floating-point number, so attempt to convert it to a float.
+        # If it can be converted and has no typical date format characteristics, assume it's in datenum format.
+        float_value = float(first_datetime)
+        if isinstance(float_value, float) and float_value > 0:
+            print("The DateTime column is already in MATLAB datenum format, no conversion needed.")
+        else:
+            raise ValueError
+    except ValueError:
+        # Try to parse the DateTime column to the standard date-time format 'YYYY-MM-DD HH:MM:SS'
+        try:
+            df['DateTime'] = pd.to_datetime(df['DateTime'])
+            # Format the DateTime column to 'YYYY-MM-DD HH:MM:SS'
+            df['DateTime'] = df['DateTime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        except ValueError as e:
+            raise ValueError(f"Failed to parse the DateTime column: {e}")
+        
+        # Convert the DateTime column to MATLAB's datenum format
+        df['DateTime'] = df['DateTime'].apply(lambda x: datestr_to_matlab_datenum(pd.to_datetime(x)))
+    
+    # If a timestep is specified, perform data interpolation
+    if timestep is not None:
+        print(f"Interpolating data to {timestep} minutes interval...")
+        return convert_csv_with_interpolation(csv_path, timestep, output_folder)
+    
+    # Extract the file name (without extension) from the original file path
+    filename = os.path.splitext(os.path.basename(csv_path))[0]
+    
+    # Define the output path and ensure the output directory exists
+    output_path = os.path.join(output_folder, f"{filename}_checked.csv")
+    os.makedirs(output_folder, exist_ok=True)
+    
+    # Save the processed DataFrame to the specified output path
+    df.to_csv(output_path, index=False)
+    
+ 
+    
+    # Return the path to the processed file
+    return output_path
+
+
+def convert_csv_with_interpolation(csv_path: str, time_step: int, output_folder: str = "data/energyPlus/inputs") -> str:
+    """
+    This function reads a CSV file provided by the user, interpolates the data based on the specified time step, 
+    and saves the processed data to a new CSV file.
+
+    Parameters:
+        csv_path (str): The path to the input CSV file.
+        time_step (int): The time step (in minutes) for the output data.
+        output_folder (str, optional): The folder path where the processed CSV file will be saved.
+                                       Defaults to "data/energyPlus/inputs".
+
+    Returns:
+        str: The path to the processed CSV file.
+    """
+    
+    # Extract the file name without extension from the original path
+    filename = os.path.splitext(os.path.basename(csv_path))[0]
+    output_file = f"{output_folder}/{filename}_{time_step}.csv"
+
+    # Check if the output file already exists
+    if os.path.isfile(output_file):
+        return output_file
+
+    # Create the output folder if it doesn't exist
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_path)
+
+    # Ensure the DateTime column exists and is in datetime format
+    if 'DateTime' not in df.columns:
+        raise ValueError("The DateTime column is not found in the CSV file.")
+    
+    df['DateTime'] = pd.to_datetime(df['DateTime'])
+
+    # Get the start time from the first entry in the DateTime column
+    startTime = df['DateTime'].iloc[0]
+
+    # Interpolate the data to the desired time step using a custom interpolation function
+    hires_data = interpolate_to_hires(startTime, df, df, interval=time_step * 60)
+
+    # Convert the DateTime column to MATLAB's datenum format
+    hires_data["DateTime"] = hires_data["DateTime"].apply(datestr_to_matlab_datenum)
+
+    # Save the interpolated data to a new CSV file
+    hires_data.to_csv(output_file, index=False)
+    
 
     return output_file
