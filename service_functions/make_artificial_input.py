@@ -38,7 +38,7 @@ def make_artificial_input(length):
     length = np.ceil(length).astype(int)
     weather = np.empty((length * 288, 9))
     time = np.arange(0, length * 86400, 300)
-    weather[:, 0] = generate_datenum_list(737485.5, length, 300)
+    weather[:, 0] = time
     weather[:, 1] = 350 * np.maximum(0, np.sin(time * 2 * np.pi / 86400))
     weather[:, 2] = 5 * np.sin(time * 2 * np.pi / 86400) + 15
     weather[:, 3] = 0.006 * np.ones(length * 288)
@@ -48,7 +48,7 @@ def make_artificial_input(length):
     weather[:, 7] = 20 * np.ones(length * 288)
 
     # convert timestamps to datenum
-    # weather[:, 0] = time / 86400 + 1
+    weather[:, 0] = time / 86400 + 1
     weather[:, 8] = day_light_sum(weather[:, 0], weather[:, 1])
 
     return weather
