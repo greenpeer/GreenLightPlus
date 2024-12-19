@@ -4,7 +4,14 @@
 
 # GreenLightPlus
 
-GreenLightPlus is a Python toolkit for greenhouse environment simulation and energy consumption and yield optimization, developed based on David Katzin's MATLAB version of the [GreenLight](https://github.com/davkat1/GreenLight) model. Compared to the original model, GreenLightPlus provides the following improvements and extensions:
+> **Disclaimer:**
+> GreenLightPlus project is developed independently by Daidai Qiu, drawing inspiration and methodological foundations from Dr. David Katzin’s MATLAB-based [GreenLight ](https://github.com/davkat1/GreenLight). Dr. Katzin did not participate in the development of GreenLightPlus, and his original work is separate and unrelated to the GreenLightPlus project.
+> 
+> If you have any questions regarding GreenLightPlus, please contact Daidai Qiu at [qiu.daidai@outlook.com](mailto:qiu.daidai@outlook.com).
+> If you have any questions regarding GreenLight, please visit [https://github.com/davkat1/GreenLight](https://github.com/davkat1/GreenLight) to contact Dr. David Katzin.
+
+
+GreenLightPlus is a Python toolkit for greenhouse environment simulation and energy consumption and yield optimization, which provides the following improvements and extensions:
 
 - Ported the original model from MATLAB to Python, improving accessibility and extensibility.
 - Supports the generation of various greenhouse geometric structures for comparative analysis.
