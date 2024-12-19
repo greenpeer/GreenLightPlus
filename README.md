@@ -5,7 +5,7 @@
 # GreenLightPlus
 
 > **Disclaimer:**
-> GreenLightPlus project is developed independently by Daidai Qiu, drawing inspiration and methodological foundations from Dr. David Katzin’s MATLAB-based [GreenLight ](https://github.com/davkat1/GreenLight). Dr. Katzin did not participate in the development of GreenLightPlus, and his original work is separate and unrelated to the GreenLightPlus project.
+> GreenLightPlus project is developed independently by Daidai Qiu, drawing inspiration and methodological foundations from Dr. David Katzin’s MATLAB-based [GreenLight ](https://github.com/davkat1/GreenLight). Dr.David Katzin did not participate in the development of GreenLightPlus, and his original work is separate and unrelated to the GreenLightPlus project.
 > 
 > If you have any questions regarding GreenLightPlus, please contact Daidai Qiu at [qiu.daidai@outlook.com](mailto:qiu.daidai@outlook.com).
 > If you have any questions regarding GreenLight, please visit [https://github.com/davkat1/GreenLight](https://github.com/davkat1/GreenLight) to contact Dr. David Katzin.
