@@ -6,6 +6,11 @@
 
 # GreenLightPlus
 
+> **免责声明：**  
+> GreenLightPlus 项目由 **邱岱岱（Daidai Qiu）** 独立开发完成，其方法论基础和灵感来源于 **Dr. David Katzin** 基于 MATLAB 的 GreenLight 模型。**Dr. David Katzin 未参与 GreenLightPlus 的开发，其原始工作与 GreenLightPlus 项目无任何直接关联。**
+> 
+> 若您对 **GreenLightPlus** 有任何疑问，请联系 **邱岱岱（Daidai Qiu）**，邮箱地址为 [qiu.daidai@outlook.com](mailto:qiu.daidai@outlook.com)。  
+> 若您对 **GreenLight** 有任何疑问，请访问 [https://github.com/davkat1/GreenLight](https://github.com/davkat1/GreenLight) 与 **Dr. David Katzin** 联系。
 
 GreenLightPlus 是一个用于温室环境模拟和能耗产量优化的 Python 工具包，基于 David Katzin 的 MATLAB 版 [GreenLight](https://github.com/davkat1/GreenLight) 模型开发。与原始模型相比，GreenLightPlus 提供了以下改进和扩展：
 
