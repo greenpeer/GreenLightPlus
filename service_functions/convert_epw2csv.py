@@ -1,5 +1,30 @@
 # File path: GreenLightPlus/service_functions/convert_epw2csv.py
-# GreenLightPlus/service_functions/convert_epw2csv.py
+"""
+EPW to CSV Weather Data Converter
+=================================
+
+This module provides utilities for converting EnergyPlus Weather (EPW) files
+to CSV format compatible with the GreenLight model. It handles time resolution
+adjustments, unit conversions, and data interpolation.
+
+Key Features:
+    - EPW file parsing and validation
+    - Time step interpolation (1-hour to 5-minute)
+    - Unit conversions for greenhouse simulations
+    - Sky temperature calculations
+    - Datetime format standardization
+    - CSV file generation with proper headers
+
+The module ensures weather data compatibility between EnergyPlus
+and GreenLight simulation environments.
+
+Author: Daidai Qiu
+Email: qiu.daidai@outlook.com
+Last Updated: July 2025
+
+Licensed under GNU GPLv3. See LICENSE file for details.
+"""
+
 import os
 import numpy as np
 import pandas as pd
@@ -8,23 +33,39 @@ from scipy.optimize import minimize
 from scipy.interpolate import pchip_interpolate
 import glob
 from typing import Union, Tuple, List, Dict
+
+# Import conversion utilities
 from .rh2vapor_dens import rh2vapor_dens
 from .co2_ppm2dens import co2_ppm2dens
-from .rh2vapor_dens import rh2vapor_dens
 
 
 def correct_hour_24(time_str):
     """
-    Corrects '24:00' hour in a datetime string to '00:00' of the next day.
-    This function handles the edge case where '24:00' is used to represent
-    midnight of the following day. It adjusts such cases to '00:00' of the
-    next day to maintain correct datetime formatting.
-
-    Parameters:
-    time_str (str): The datetime string in the format 'YYYY-MM-DD HH:MM'.
-
+    Handle EPW format edge case for midnight representation.
+    
+    EPW files sometimes use '24:00' to represent midnight of the following day,
+    which is not valid in standard datetime formats. This function converts
+    such representations to '00:00' of the next day.
+    
+    This correction is essential for:
+    - Proper datetime parsing
+    - Continuous time series generation
+    - Avoiding parsing errors in pandas
+    
+    Args:
+        time_str (str): Datetime string in format 'YYYY-MM-DD HH:MM'.
+            May contain invalid '24:00' hour notation.
+    
     Returns:
-    str: The corrected datetime string in the format 'YYYY-MM-DD HH:MM'.
+        str: Corrected datetime string with valid hour notation.
+            '24:00' is converted to '00:00' of the following day.
+    
+    Examples:
+        >>> correct_hour_24('2023-12-31 24:00')
+        '2024-01-01 00:00'
+        
+        >>> correct_hour_24('2023-06-15 13:30')
+        '2023-06-15 13:30'
     """
     if time_str.endswith("24:00"):
         # Split the date and time parts

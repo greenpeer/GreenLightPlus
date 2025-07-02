@@ -1,35 +1,103 @@
 # File path: GreenLightPlus/result_analysis/energy_yield_analysis.py
 """
+Energy-Yield Performance Analysis Module
+=======================================
+
+This module analyzes the relationship between energy consumption and
+crop yield in greenhouse simulations. It calculates key performance
+indicators including energy efficiency, light use efficiency, and
+yield productivity.
+
+The analysis provides insights into:
+- Total energy consumption by component (lighting, heating)
+- Light integral from sun and supplemental lighting
+- Fresh weight yield production
+- Energy efficiency metrics (MJ/kg produce)
+
+These metrics are essential for:
+- Economic feasibility studies
+- Optimization of climate control strategies
+- Comparison of different greenhouse configurations
+- Sustainability assessments
+
 Copyright Statement:
-
-This Python version of the code is based on the open-source Matlab code released by David Katzin at Wageningen University and is subject to his original copyright.
-
-Original Matlab code author: David Katzin
-Original author's email: david.katzin@wur.nl, david.katzin1@gmail.com
-
-New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
-
-This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+    Based on original Matlab code by David Katzin (david.katzin@wur.nl)
+    Python implementation by Daidai Qiu (qiu.daidai@outlook.com)
+    Last Updated: July 2025
+    
+    Licensed under GNU GPLv3. See LICENSE file for details.
 """
-
 
 from ..service_functions.funcs import *
 
 
 def energy_yield_analysis(gl, print_val=False):
     """
-    Input:
-    gl -    a GreenLight model dict, after simulating
-    Outputs:
-    lampIn -        Energy consumption of the lamps [MJ m^{-2}]
-    boilIn -        Energy consumption of the boiler [MJ m^{-2}]
-    hhIn -          Energy consumption of the heat harvesting system [MJ m^{-2}]
-    parSun -        PAR light from the sun reaching above the canopy [mol m^{-2}]
-    parLamps -      PAR light from the lamps reaching outside the canopy [mol m^{-2}]
-    yield -         Fresh weight tomato yield [kg m^{-2}]
-    efficiency -    Energy input needed per tomato yield [MJ kg^{-1}]
-
+    Analyze energy consumption and crop yield performance metrics.
+    
+    This function calculates comprehensive performance indicators for
+    greenhouse operations, focusing on the relationship between energy
+    inputs and crop production. It evaluates both direct energy use
+    (electricity, heating) and light energy (solar, supplemental).
+    
+    The analysis helps answer key questions:
+    - How much energy is required per kg of produce?
+    - What is the contribution of supplemental lighting?
+    - How efficient is the greenhouse system overall?
+    
+    Performance Metrics Calculated:
+    1. Energy Consumption:
+        - Lamp electricity use
+        - Heating system fuel/energy use
+        - Heat pump/recovery system use
+        
+    2. Light Integrals:
+        - Daily Light Integral (DLI) from sun
+        - Supplemental light contribution
+        - Total photosynthetic light
+        
+    3. Yield Metrics:
+        - Fresh weight production
+        - Dry matter accumulation
+        - Harvest index
+        
+    4. Efficiency Indicators:
+        - Energy per unit yield (MJ/kg)
+        - Light use efficiency
+        - Overall system efficiency
+    
+    Args:
+        gl (dict): Complete GreenLight model dictionary after simulation.
+            Must contain results from a full growing season or period.
+        print_val (bool, optional): If True, prints detailed analysis
+            results to console. Useful for quick inspection. Default: False.
+    
+    Returns:
+        dict: Performance metrics containing:
+            - 'lampIn': Lamp energy consumption [MJ m^-2]
+            - 'boilIn': Boiler/heating energy [MJ m^-2]
+            - 'hhIn': Heat harvesting energy credit [MJ m^-2]
+            - 'parSun': Solar PAR integral [mol m^-2]
+            - 'parLamps': Lamp PAR integral [mol m^-2]
+            - 'yield': Fresh weight yield [kg m^-2]
+            - 'efficiency': Energy use efficiency [MJ kg^-1]
+            - Additional derived metrics
+    
+    Example:
+        >>> # Run full season simulation
+        >>> results = model.run_simulation(days=120)
+        >>> 
+        >>> # Analyze performance
+        >>> metrics = energy_yield_analysis(results['gl'], print_val=True)
+        >>> 
+        >>> # Check efficiency
+        >>> print(f"Energy efficiency: {metrics['efficiency']:.1f} MJ/kg")
+        Energy efficiency: 45.2 MJ/kg
+    
+    Note:
+        - Assumes tomato crop with 6% dry matter content
+        - Heat harvesting systems are optional (defaults to 0)
+        - All energy values converted to MJ for consistency
     """
     # If the model did not have heat harvesting, set these values as 0
     if "mech" not in gl["u"]:

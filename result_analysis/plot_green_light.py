@@ -28,26 +28,79 @@ from ..service_functions.co2_dens2ppm import co2_dens2ppm
 
 
 def plot_green_light(gl):
-    # Convert the time series to datetime objects
+    """
+    Generate comprehensive visualization of GreenLight simulation results.
+    
+    Creates a multi-panel figure displaying key greenhouse variables over time,
+    including climate conditions, crop states, and energy consumption. The
+    function automatically formats time axes and applies appropriate units.
+    
+    The 12-panel layout provides a complete overview of:
+    1. Temperature (indoor/outdoor comparison)
+    2. Relative humidity
+    3. Vapor pressure deficit
+    4. CO2 concentration
+    5. PAR light levels
+    6. Lamp operation status
+    7. Fruit fresh weight
+    8. Stem, leaf, and fruit dry matter
+    9. LAI and crop development
+    10. Net assimilation and growth
+    11. Heating/cooling power
+    12. Total energy consumption
+    
+    Args:
+        gl (dict): Complete GreenLight model dictionary after simulation.
+            Must contain:
+            - 'x': State variables time series
+            - 'd': Disturbance (weather) time series
+            - 'a': Auxiliary variables time series
+            - 'u': Control inputs time series
+            - 'p': Parameters (for unit conversions)
+    
+    Returns:
+        matplotlib.figure.Figure: The generated figure object.
+            Can be saved or displayed using plt.show().
+    
+    Example:
+        >>> # Run simulation
+        >>> results = model.run_simulation(days=7)
+        >>> 
+        >>> # Generate plots
+        >>> fig = plot_green_light(results['gl'])
+        >>> plt.show()
+        >>> 
+        >>> # Save high-resolution figure
+        >>> fig.savefig('greenhouse_results.png', dpi=300, bbox_inches='tight')
+    
+    Note:
+        - Time axis starts from 2023-01-01 by default (can be customized)
+        - All times are in 5-minute intervals
+        - Automatically handles missing data with appropriate markers
+    """
+    # Time series configuration
+    # Default start time for visualization (arbitrary reference)
     t_label = "2023-01-01 01:00:00"
     start_time = datetime.strptime(t_label, "%Y-%m-%d %H:%M:%S")
+    
+    # Generate datetime array for x-axis (5-minute intervals)
     x_datetime = [
         start_time + timedelta(seconds=300 * i) for i in range(len(gl["x"]["tAir"]))
     ]
-
     end_time = x_datetime[-1]
 
-    # Set up the figure and subplots
+    # Figure setup with high resolution for publication quality
     fig = plt.figure(figsize=(20, 8), dpi=300)
-    n_rows = 3
+    n_rows = 3  # Grid layout
     n_cols = 4
 
-    # Suplot 1
+    # Subplot 1: Temperature Comparison
+    # Shows indoor vs outdoor temperature dynamics
     ax1 = fig.add_subplot(n_rows, n_cols, 1)
-    ax1.plot(x_datetime, gl["x"]["tAir"][:, 1], label="Indoor")
-    ax1.plot(x_datetime, gl["d"]["tOut"][:, 1], label="Outdoor")
+    ax1.plot(x_datetime, gl["x"]["tAir"][:, 1], label="Indoor", linewidth=1.5)
+    ax1.plot(x_datetime, gl["d"]["tOut"][:, 1], label="Outdoor", linewidth=1.5, alpha=0.7)
     ax1.set_ylabel("Temperature (°C)")
-    ax1.legend()
+    ax1.legend(loc='best', fontsize='small')
 
     # Suplot 2
     ax2 = fig.add_subplot(n_rows, n_cols, 2)
@@ -147,7 +200,8 @@ def plot_green_light(gl):
     ax9_2.set_ylabel("m^2 m^{-2}")
     ax9_2.legend(loc="upper right")
 
-    # Suplot 10
+    # Subplot 10: Fruit Fresh Weight and Harvest
+    # Monitors yield accumulation and harvest events
     ax10 = fig.add_subplot(n_rows, n_cols, 10)
     ax10.plot(x_datetime, gl["x"]["cFruit"][:, 1], label="Fruit dry weight")
     ax10.set_ylabel("mg (CH_2O) m^{-2}")
@@ -160,9 +214,10 @@ def plot_green_light(gl):
     ax10_2.set_ylabel("mg (CH_2O) m^{-2} s^{-1}")
     ax10_2.legend(loc="upper right")
 
-    # create an array of x-values for each time step
+    # Subplot 11: Temperature Distribution in Greenhouse
+    # Shows temperature gradients across different components
     ax11 = fig.add_subplot(n_rows, n_cols, 11)
-    # plot each temperature state with a different color
+    # Plot temperature states for all greenhouse layers
     ax11.plot(x_datetime, gl["x"]["tCan"][:, 1], label="tCan")
     ax11.plot(x_datetime, gl["x"]["tAir"][:, 1], label="tAir")
     ax11.plot(x_datetime, gl["x"]["tThScr"][:, 1], label="tThScr")

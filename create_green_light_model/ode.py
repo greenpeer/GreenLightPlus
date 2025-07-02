@@ -1,4 +1,5 @@
 # GreenLightPlus/GreenLightPlus/create_green_light_model/ode.py
+# ODE Solver Implementation for GreenLight Model
 """
 Copyright Statement:
 
@@ -26,22 +27,67 @@ import numpy as np
 np.seterr(invalid="ignore", over="ignore")  # Set numpy to ignore invalid and overflow warnings
 
 class ODESolver:
+    """
+    Custom ODE solver wrapper for GreenLight model integration.
+    
+    This class provides a specialized interface between the GreenLight model
+    and scipy's ODE solvers. It handles:
+    - Time-dependent input interpolation
+    - State variable management
+    - Auxiliary calculations at each time step
+    - Control system updates
+    
+    The solver maintains model consistency by updating all interdependent
+    variables at each integration step, ensuring physical relationships
+    are preserved throughout the simulation.
+    
+    Attributes:
+        gl (dict): Complete GreenLight model instance
+        d (ndarray): Disturbance (weather) input matrix
+        u (ndarray): Control input matrix
+        prev_gl (dict): Previous model state for event detection
+    """
+    
     def __init__(self, d, u, gl):
         """
-        Initialize the ODESolver class
-        :param u: Control variable matrix
-        :param gl: GreenLight model instance
+        Initialize ODE solver with model and input data.
+        
+        Args:
+            d (ndarray): Disturbance matrix with weather data.
+                Shape: (n_timesteps, n_disturbances)
+                Columns include temperature, radiation, humidity, etc.
+            u (ndarray): Control input matrix with setpoints.
+                Shape: (n_timesteps, n_controls)
+                Columns include heating, ventilation, lighting controls.
+            gl (dict): Initialized GreenLight model instance containing:
+                - 'x': State variables
+                - 'p': Parameters
+                - 't': Time vector
+                - 'a': Auxiliary variables
         """
-        self.gl = gl  # Store the entire GreenLight model instance
-        self.d = d  # Store the entire uncontrolled variables matrix
-        self.u = u  # Store the control variable matrix
-        self.prev_gl = {}  # Initialize dict to store previous GreenLight model instance
+        self.gl = gl  # Complete model structure
+        self.d = d  # Weather/disturbance inputs
+        self.u = u  # Control inputs
+        self.prev_gl = {}  # State history for event handling
 
     def convert_dict_to_array(self, data_dict):
         """
-        Convert dictionary data to a 2D NumPy array
-        :param data_dict: Dictionary containing the data
-        :return: Converted 2D NumPy array
+        Convert state dictionary to numpy array for ODE solver.
+        
+        Transforms the hierarchical state dictionary into a flat array
+        format required by numerical integrators. Maintains consistent
+        ordering for proper state reconstruction.
+        
+        Args:
+            data_dict (dict): Dictionary with state variables as key-value pairs.
+                Each value should be a numpy array of the same length.
+                
+        Returns:
+            ndarray: 2D array with shape (n_timesteps, n_variables).
+                Each column corresponds to one state variable.
+                
+        Raises:
+            ValueError: If dictionary values have inconsistent shapes.
         """
         keys = list(data_dict.keys())  # Get all keys of the dictionary
         num_rows = data_dict[keys[0]].shape[0]  # Get number of rows from the first array

@@ -1,52 +1,118 @@
 # File path: GreenLightPlus/core/greenlight_energyplus_simulation.py
 """
+GreenLight-EnergyPlus Co-simulation Integration
+==============================================
+
+This module provides seamless integration between the GreenLight greenhouse
+model and EnergyPlus building energy simulation software. It enables
+high-fidelity co-simulation where EnergyPlus handles detailed building
+physics while GreenLight manages crop growth and greenhouse-specific
+climate dynamics.
+
+Key Features:
+    - Real-time data exchange between GreenLight and EnergyPlus
+    - Synchronized time stepping and state updates
+    - Bidirectional coupling for temperature and humidity
+    - Energy consumption tracking from both simulators
+    - Support for different greenhouse geometries
+
+Technical Implementation:
+    - Uses EnergyPlus Python API for runtime coupling
+    - Callback-based architecture for time step synchronization
+    - Sensor handles for efficient data exchange
+    - Automatic unit conversions between simulators
+
 Copyright Statement:
-
-Author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com
-
-This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+    Author: Daidai Qiu
+    Author's email: qiu.daidai@outlook.com
+    Last Updated: July 2025
+    
+    This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
 
+# Import utility functions and core model
 from ..service_functions.funcs import calculate_energy_consumption, extract_last_value_from_nested_dict
 from .green_light_model import GreenLightModel
 
 
 class GreenhouseSimulation:
+    """
+    Co-simulation coordinator for GreenLight and EnergyPlus integration.
+    
+    This class manages the coupled simulation of greenhouse systems by:
+    - Synchronizing time steps between simulators
+    - Exchanging environmental conditions (temperature, humidity)
+    - Aggregating energy consumption from both models
+    - Tracking crop yield throughout the growing season
+    
+    The co-simulation allows for more accurate energy analysis by combining:
+    - EnergyPlus: Detailed HVAC, building envelope, and thermal mass
+    - GreenLight: Crop physiology, photosynthesis, and transpiration
+
+    Attributes:
+        api: EnergyPlus Python API instance for runtime coupling
+        model: GreenLight simulation model instance
+        sensor handles: EnergyPlus variable/actuator handles for data exchange
+        total_yield: Cumulative crop production (kg/m²)
+        energy metrics: Lamp and boiler consumption tracking
+    """
 
     def __init__(self, api, epw_path, idf_path, csv_path, output_directory, first_day, season_length, isMature=False):
+        """
+        Initialize co-simulation environment.
+        
+        Sets up both GreenLight and EnergyPlus models with synchronized
+        configuration for coupled simulation.
+        
+        Args:
+            api: EnergyPlus Python API instance
+            epw_path (str): Path to EnergyPlus weather file (.epw)
+            idf_path (str): Path to EnergyPlus input file (.idf)
+            csv_path (str): Path to preprocessed weather data (.csv)
+            output_directory (str): Directory for simulation outputs
+            first_day (int): Starting day of year (1-365)
+            season_length (float): Growing season duration in days
+            isMature (bool): Initialize with mature crop. Default: False
+        """
         super().__init__()
+        # EnergyPlus API and file paths
         self.api = api
         self.epw_path = epw_path
         self.idf_path = idf_path
         self.csv_path = csv_path
         self.output_directory = output_directory
+        
+        # Simulation state tracking
         self.last_time_step = None
         self.total_minutes = 0
         self.simulation_started = False
         self.isMature = isMature
 
-        # 初始化各种传感器句柄为None
-        self.temp_sensor_handle = None
-        self.rh_sensor_handle = None
-        self.temp_outdoor_sensor_handle = None
-        self.outdoor_air_temp_handle = None
-        self.humidity_ratio_handle = None
+        # Initialize sensor handles for data exchange / 初始化数据交换的传感器句柄
+        self.temp_sensor_handle = None  # Indoor air temperature / 室内空气温度
+        self.rh_sensor_handle = None  # Indoor relative humidity / 室内相对湿度
+        self.temp_outdoor_sensor_handle = None  # Outdoor air temperature / 室外空气温度
+        self.outdoor_air_temp_handle = None  # Alternative outdoor temp / 备用室外温度
+        self.humidity_ratio_handle = None  # Humidity ratio for conversions / 湿度比转换
 
-        # 生长周期参数
-        self.season_length = season_length  # 生长周期长度, 天数
-        self.season_interval = self.season_length  # 每次模型运行的时间间隔, 天数
-        self.first_day = first_day  # 生长周期的第一天日期
+        # Growing season parameters / 生长季节参数
+        self.season_length = season_length  # Total season duration (days) / 生长周期长度
+        self.season_interval = self.season_length  # Model update interval / 模型更新间隔
+        self.first_day = first_day  # Starting day of year / 起始日期
 
-        # 初始化产量和能耗
-        self.total_yield = 0
-        self.lampIn = 0
-        self.boilIn = 0
-        self.current_step = 0
+        # Performance metrics / 性能指标
+        self.total_yield = 0  # Cumulative fruit yield / 累计产量
+        self.lampIn = 0  # Lamp energy consumption / 灯具能耗
+        self.boilIn = 0  # Boiler energy consumption / 锅炉能耗
+        self.current_step = 0  # Simulation step counter / 仿真步数
 
-        # 创建GreenLight模型实例, 初始状态为未成熟
+        # Initialize GreenLight model / 初始化GreenLight模型
         self.model = GreenLightModel(
-            first_day=self.first_day, isMature=self.isMature, epw_path=self.epw_path, csv_path=self.csv_path)
+            first_day=self.first_day, 
+            isMature=self.isMature, 
+            epw_path=self.epw_path, 
+            csv_path=self.csv_path
+        )
 
         # 初始化状态参数
         self.init_state = {

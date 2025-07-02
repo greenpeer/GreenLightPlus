@@ -1,132 +1,193 @@
 # File path: GreenLightPlus/core/greenhouse_env.py
 """
+Greenhouse Reinforcement Learning Environment
+============================================
+
+This module implements a Gymnasium-compatible environment for training
+reinforcement learning agents to control greenhouse climate systems.
+The environment wraps the GreenLight model to provide a standard
+interface for RL algorithms.
+
+Key Features:
+    - OpenAI Gym/Gymnasium compatible interface
+    - Discrete action space for temperature control
+    - Comprehensive observation space including climate and crop states
+    - Reward function balancing yield and energy consumption
+    - Configurable episode length and initial conditions
+
 Copyright Statement:
-
-Author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com
-
-This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+    Author: Daidai Qiu
+    Author's email: qiu.daidai@outlook.com
+    Last Updated: July 2025
+    
+    This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
 """
 
-
-# GreenLight/core/greenhouse_env.py
+# Internal imports
 from .green_light_model import GreenLightModel
 from ..service_functions.funcs import calculate_energy_consumption, extract_last_value_from_nested_dict
 
-# Third-Party Imports
+# External imports for RL environment
 import gymnasium as gym
 import numpy as np
 import random
         
 class GreenhouseEnv(gym.Env):
     """
-    Custom Environment that follows gym interface.
-    这是一个自定义的温室环境,遵循OpenAI Gym的接口标准。
+    Reinforcement Learning environment for greenhouse climate control.
+    
+    This environment provides a standard Gymnasium interface for training
+    RL agents to optimize greenhouse operations. The agent learns to
+    control heating setpoints to maximize crop yield while minimizing
+    energy consumption.
+    
+    自定义温室环境，遵循OpenAI Gym/Gymnasium接口标准，用于训练
+    强化学习智能体优化温室气候控制策略。
+
+    Key Components:
+        - State Space: Temperature, humidity, CO2, PAR, crop biomass
+        - Action Space: Discrete heating setpoint adjustments
+        - Reward: Weighted combination of yield and energy efficiency
+        - Dynamics: Based on GreenLight physical model
+
+    Attributes:
+        observation_space (gym.Space): Continuous box space for observations
+        action_space (gym.Space): Discrete space for temperature setpoints
+        model (GreenLightModel): Core greenhouse simulation model
+        state (np.ndarray): Current environment state vector
+        episode_rewards (list): Accumulated rewards per episode
     """
 
     def __init__(self, env_config):
         """
-        初始化温室环境。
-        :param env_config: 环境配置字典,包含各种环境参数。
+        Initialize greenhouse RL environment with specified configuration.
+        
+        初始化温室强化学习环境，设置状态空间、动作空间和奖励函数。
+        
+        Args:
+            env_config (dict): Environment configuration containing:
+                - first_day (int): Starting day of year (1-365). Default: 1
+                - isMature (bool): Start with mature crop. Default: False
+                - epw_path (str): Path to weather data file. Default: ""
+                - season_length (int): Episode length in days. Default: 60
+                - season_interval (float): Time step in days. Default: 1/24 (1 hour)
+                - current_step (int): Initial time step. Default: 0
+                - init_state (dict): Initial state overrides. Default: {}
+                - target_yield (float): Target fruit yield kg/m². Default: 0
+                - target_yield_unit_energy_input (float): Target efficiency. Default: 0
+                
+        环境配置参数:
+            - first_day: 模拟起始日期（一年中的第几天）
+            - isMature: 是否从成熟作物开始
+            - epw_path: 天气数据文件路径
+            - season_length: 每个episode的天数
+            - season_interval: 时间步长（天）
+            - current_step: 当前步数
+            - init_state: 初始状态覆盖
+            - target_yield: 目标产量
+            - target_yield_unit_energy_input: 目标能效
         """
         super(GreenhouseEnv, self).__init__()
 
-
-        # 从环境配置中获取各种参数
-  
-        self.first_day = env_config.get("first_day", 1)  # 第一天的日期,默认为1
+        # Extract configuration parameters / 提取配置参数
+        self.first_day = env_config.get("first_day", 1)  # Starting day of year / 起始日期
         
-        # Randomly select a new first day for each episode
+        # Randomize starting day for training diversity / 随机化起始日期以增加训练多样性
+        # Spring season (day 90-120) for consistent growing conditions
         self.new_first_day = random.randint(90, 120)
     
+        # Crop and simulation parameters / 作物和模拟参数
+        self.isMature = env_config.get("isMature", False)  # Mature crop flag / 成熟作物标志
+        self.epw_path = env_config.get("epw_path", "")  # Weather data path / 天气数据路径
+        self.season_length = env_config.get("season_length", 60)  # Episode duration (days) / 回合持续时间
+        self.season_interval = env_config.get("season_interval", 1/24)  # Time step (days) / 时间步长
+        self.current_step = env_config.get("current_step", 0)  # Episode step counter / 回合步数计数器
+        self.init_state = env_config.get("init_state", {})  # State overrides / 状态覆盖
+        
+        # Performance targets for reward calculation / 奖励计算的性能目标
+        self.target_yield = env_config.get("target_yield", 0)  # Target fruit yield / 目标果实产量
+        self.target_yield_unit_energy_input = env_config.get("target_yield_unit_energy_input", 0)  # Energy efficiency / 能源效率
+        self.target_harvest_unit_energy_input = env_config.get("target_harvest_unit_energy_input", 0)  # Harvest energy target / 收获期能效目标
 
-        self.isMature = env_config.get("isMature", False)  # 作物是否成熟,默认为False
-        self.epw_path = env_config.get("epw_path", "")  # 天气数据输入,默认为空字符串
-        self.season_length = env_config.get("season_length", 60)  # 季节长度,默认为60
-        self.season_interval = env_config.get("season_interval", 1/24)  # 季节间隔,默认为1/24
-        self.current_step = env_config.get("current_step", 0)  # 当前步数,默认为0
-        self.init_state = env_config.get("init_state", {})  # 初始状态,默认为空字典
-        self.target_yield = env_config.get("target_yield", 0)  # 目标水果产量,默认为0
-        self.target_yield_unit_energy_input = env_config.get("target_yield_unit_energy_input", 0)  # 目标单位能耗,默认为0
-        self.target_harvest_unit_energy_input = env_config.get("target_harvest_unit_energy_input", 0)  # 目标收获期单位能耗,默认为0
-
-        # 初始化GreenLightModel,传入天气数据,第一天日期,作物成熟状态
+        # Initialize GreenLight simulation model / 初始化GreenLight仿真模型
+        # Model encapsulates greenhouse physics and crop growth dynamics
         self.model = GreenLightModel(
-            epw_path=self.epw_path,
-            first_day=self.new_first_day,
-            isMature=self.isMature,
+            epw_path=self.epw_path,  # Weather data source / 天气数据源
+            first_day=self.new_first_day,  # Randomized start day / 随机起始日
+            isMature=self.isMature,  # Crop maturity state / 作物成熟状态
         )
 
-        # 初始化各种能耗和产量变量
-        self.yield_unit_energy_input = 0  # 实际单位能耗
-        self.total_energy_input = 0  # 总能耗
-        self.growth_energy_input = 0  # 生长期能耗
-        self.harvest_energy_input = 0  # 收获期能耗
-        self.harvest_unit_energy_input = 0  # 收获期单位能耗
+        # Performance tracking variables / 性能跟踪变量
+        # Energy consumption metrics / 能耗指标
+        self.yield_unit_energy_input = 0  # Actual energy efficiency (kg/kWh) / 实际能效
+        self.total_energy_input = 0  # Cumulative energy use (kWh/m²) / 累计能耗
+        self.growth_energy_input = 0  # Energy during growth phase / 生长期能耗
+        self.harvest_energy_input = 0  # Energy during harvest phase / 收获期能耗
+        self.harvest_unit_energy_input = 0  # Harvest phase efficiency / 收获期效率
 
-        self.total_yield = 0  # 总产量
-        self.total_reward = 0  # 总奖励
-        self.cost_penalty = 0  # 成本惩罚
+        # Production metrics / 生产指标
+        self.total_yield = 0  # Cumulative fruit yield (kg/m²) / 累计产量
+        self.total_reward = 0  # Cumulative RL reward / 累计强化学习奖励
+        self.cost_penalty = 0  # Energy cost penalty term / 能源成本惩罚项
 
-        self.yield_change = 0  # 产量变化
+        self.yield_change = 0  # Per-step yield increment / 单步产量增量
 
-        # 使用初始状态运行模型,得到初始观测值
-        self.new_gl = self.model.run_model(gl_params=self.init_state, season_length=self.season_length,
-                                           season_interval=self.season_interval, step=self.current_step)
+        # Run initial simulation step to establish baseline / 运行初始模拟步骤建立基线
+        # This provides the initial observation for the RL agent
+        self.new_gl = self.model.run_model(
+            gl_params=self.init_state,  # Override default parameters / 覆盖默认参数
+            season_length=self.season_length,  # Episode duration / 回合持续时间
+            season_interval=self.season_interval,  # Time step size / 时间步长
+            step=self.current_step  # Current position in episode / 当前回合位置
+        )
 
-        # 定义离散动作空间,0表示温度降低1度,1表示不变,2表示升高1度
+        # Define discrete action space for temperature control / 定义温度控制的离散动作空间
+        # Actions map to temperature setpoints from 18-28°C (11 discrete levels)
+        # Action 0 = 18°C, Action 5 = 23°C (baseline), Action 10 = 28°C
         self.action_space = gym.spaces.Discrete(11)
 
-        # 定义观测空间的下限和上限
+        # Define observation space bounds / 定义观测空间边界
+        # State vector includes environmental conditions and crop status
         low = np.array(
             [
-                0,  # 一年中的天数
-                18,  # 夜间温度设定值
-                18,  # 白天温度设定值
-                400,  # 白天CO2设定值
-                400,  # 空气CO2浓度
-                0,  # 空气水汽压
-                0,  # 空气温度
-                300,  # 果实干物质重量
-                0,  # 总维持呼吸速率
-                0,  # 净光合速率
-                0,  # 全球辐射
-                -10,  # 室外温度
-                # 0,  # 室外水汽压
-                # 400,  # 室外CO2浓度
-                # 0,  # 室外风速
-                # -50,  # 天空温度
-                # 0,  # 外部土壤温度
-                0,  # 灯具能耗
-                0,  # 锅炉能耗
+                0,    # Day of year (1-365) / 一年中的天数
+                18,   # Night temperature setpoint (°C) / 夜间温度设定值
+                18,   # Day temperature setpoint (°C) / 白天温度设定值
+                400,  # Day CO2 setpoint (ppm) / 白天CO2设定值
+                400,  # Air CO2 concentration (ppm) / 空气CO2浓度
+                0,    # Air vapor pressure (Pa) / 空气水汽压
+                0,    # Air temperature (°C) / 空气温度
+                300,  # Fruit dry matter (mg/m²) / 果实干物质重量
+                0,    # Total maintenance respiration (mg/m²/s) / 总维持呼吸速率
+                0,    # Net photosynthesis rate (mg/m²/s) / 净光合速率
+                0,    # Global radiation (W/m²) / 全球辐射
+                -10,  # Outdoor temperature (°C) / 室外温度
+                0,    # Lamp power consumption (W/m²) / 灯具能耗
+                0,    # Boiler power consumption (W/m²) / 锅炉能耗
             ]
         )
 
         high = np.array(
             [
-                365,  # 一年中的天数
-                28,  # 夜间温度设定值
-                28,  # 白天温度设定值
-                1600,  # 白天CO2设定值
-                2500,  # 空气CO2浓度
-                5000,  # 空气水汽压
-                40,  # 空气温度
-                3e5,  # 果实干物质重量
-                0.2,  # 总维持呼吸速率
-                2,  # 净光合速率
-                1000,  # 全球辐射
-                40,  # 室外温度
-                # 5000,  # 室外水汽压
-                # 900,  # 室外CO2浓度
-                # 50,  # 室外风速
-                # 50,  # 天空温度
-                # 40,  # 外部土壤温度
-                500,  # 灯具能耗
-                500,  # 锅炉能耗
+                365,   # Day of year (1-365) / 一年中的天数
+                28,    # Night temperature setpoint (°C) / 夜间温度设定值
+                28,    # Day temperature setpoint (°C) / 白天温度设定值
+                1600,  # Day CO2 setpoint (ppm) / 白天CO2设定值
+                2500,  # Air CO2 concentration (ppm) / 空气CO2浓度
+                5000,  # Air vapor pressure (Pa) / 空气水汽压
+                40,    # Air temperature (°C) / 空气温度
+                3e5,   # Fruit dry matter (mg/m²) / 果实干物质重量
+                0.2,   # Total maintenance respiration (mg/m²/s) / 总维持呼吸速率
+                2,     # Net photosynthesis rate (mg/m²/s) / 净光合速率
+                1000,  # Global radiation (W/m²) / 全球辐射
+                40,    # Outdoor temperature (°C) / 室外温度
+                500,   # Lamp power consumption (W/m²) / 灯具能耗
+                500,   # Boiler power consumption (W/m²) / 锅炉能耗
             ]
         )
 
-        # 定义连续观测空间
+        # Define continuous observation space / 定义连续观测空间
+        # 14-dimensional state vector for RL agent
         self.observation_space = gym.spaces.Box(
             low=low, high=high, shape=(14,), dtype=np.float64
         )
@@ -136,16 +197,38 @@ class GreenhouseEnv(gym.Env):
 
     def step(self, action):
         """
-        环境步进函数,接收一个动作,返回下一个观测值、奖励、是否结束等信息。
-        :param action: 采取的动作
-        :return: 下一个观测值、奖励、是否结束等信息
+        Execute one environment step with given action.
+        
+        环境步进函数，执行动作并返回新状态、奖励等信息。
+        
+        This method:
+        1. Applies the temperature control action
+        2. Runs the greenhouse simulation for one time step
+        3. Calculates energy consumption and crop yield
+        4. Computes the reward signal
+        5. Checks episode termination conditions
+        
+        Args:
+            action (int): Discrete action from agent (0-10).
+                Maps to temperature setpoint 18-28°C.
+                采取的动作（0-10），映射到18-28°C温度设定值。
+                
+        Returns:
+            tuple: (observation, reward, terminated, truncated, info)
+                - observation (np.ndarray): Current state vector / 当前状态向量
+                - reward (float): Step reward / 步进奖励
+                - terminated (bool): Episode ended naturally / 回合自然结束
+                - truncated (bool): Episode cut off / 回合被截断
+                - info (dict): Additional information / 附加信息
         """
+        # Update model state from previous step / 更新上一步的模型状态
         self.gl = self.new_gl
 
-        # 判断是白天还是夜晚
+        # Check day/night period for control logic / 检查昼夜周期用于控制逻辑
         is_daytime = self.gl["d"]["isDay"]
 
-        # 将动作映射到具体的温度改变,范围18-28
+        # Map discrete action to temperature setpoint / 将离散动作映射到温度设定值
+        # Action 0 → 18°C, Action 5 → 23°C, Action 10 → 28°C
         temperature_change = action + 18
 
         # 根据白天或夜晚调整相应的温度设定,1表示白天,0表示夜晚

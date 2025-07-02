@@ -20,33 +20,101 @@ from ..service_functions.funcs import *
 
 
 def energy_analysis(gl, print_val=False):
-    # Calculate the energy consumption for each component of the model
-    # The calculate_energy_consumption function is imported from another module called "..service_functions.funcs"
+    """
+    Perform comprehensive energy balance analysis on simulation results.
+    
+    This function calculates all major energy flows in the greenhouse system,
+    including inputs (solar, heating, lighting), outputs (ventilation, 
+    conduction, radiation), and internal transfers (transpiration).
+    
+    The energy balance should close to near zero, validating the simulation's
+    physical consistency. Any significant imbalance indicates potential
+    numerical issues or model errors.
+    
+    Energy Flow Categories:
+    1. Inputs:
+        - Solar radiation (direct, diffuse, ground reflected)
+        - Heating pipes (primary and grow pipes)
+        - Supplemental lighting
+        
+    2. Outputs:
+        - Ventilation (natural and forced)
+        - Conduction through cover
+        - Thermal radiation to sky
+        - Soil heat loss
+        
+    3. Internal:
+        - Crop transpiration (latent heat)
+        - Sensible heat storage
+    
+    Args:
+        gl (dict): Complete GreenLight model dictionary after simulation.
+            Must contain 'a' (auxiliary variables) with energy fluxes.
+        print_val (bool, optional): If True, prints detailed energy breakdown
+            to console. Useful for debugging. Default: False.
+    
+    Returns:
+        dict: Energy balance components in MJ/m²:
+            - 'sunIn': Total solar energy input
+            - 'lampIn': Supplemental lighting energy
+            - 'heatIn': Heating system energy
+            - 'transp': Transpiration latent heat
+            - 'ventOut': Ventilation heat loss
+            - 'convOut': Conduction heat loss
+            - 'firOut': Thermal radiation loss
+            - 'soilOut': Soil heat exchange
+            - 'balance': Energy balance closure (should be ≈ 0)
+            - 'balanceRel': Relative balance error (%)
+    
+    Example:
+        >>> # Run simulation
+        >>> results = model.run_simulation(days=7)
+        >>> 
+        >>> # Analyze energy flows
+        >>> energy = energy_analysis(results['gl'], print_val=True)
+        >>> 
+        >>> # Check energy balance closure
+        >>> if abs(energy['balanceRel']) > 1.0:
+        ...     print("Warning: Energy balance error exceeds 1%")
+    """
+    # Solar radiation input components
+    # Includes PAR, NIR, and thermal radiation from sun
     sunIn = calculate_energy_consumption(
         gl,
-        "rGlobSunAir",
-        "rParSunCan",
-        "rNirSunCan",
-        "rParSunFlr",
-        "rNirSunFlr",
-        "rGlobSunCovE",
+        "rGlobSunAir",   # Global solar on air volume
+        "rParSunCan",    # PAR absorbed by canopy
+        "rNirSunCan",    # NIR absorbed by canopy
+        "rParSunFlr",    # PAR reaching floor
+        "rNirSunFlr",    # NIR reaching floor
+        "rGlobSunCovE",  # Solar absorbed by cover
     )
+    
+    # Heating system energy input
+    # Includes both main pipes and grow pipes
     heatIn = calculate_energy_consumption(gl, "hBoilPipe", "hBoilGroPipe")
+    
+    # Transpiration latent heat flux
+    # Energy removed by water evaporation from crop
     transp = calculate_energy_consumption(
         gl, "lAirThScr", "lAirBlScr", "lTopCovIn"
     ) - calculate_energy_consumption(gl, "lCanAir")
-    soilOut = -calculate_energy_consumption(gl, "hSo5SoOut")
-    ventOut = -calculate_energy_consumption(gl, "hAirOut", "hTopOut")
-    convOut = -calculate_energy_consumption(gl, "hCovEOut")
+    
+    # Energy exchanges with boundaries (negative = outflow)
+    soilOut = -calculate_energy_consumption(gl, "hSo5SoOut")  # Deep soil exchange
+    ventOut = -calculate_energy_consumption(gl, "hAirOut", "hTopOut")  # Ventilation
+    convOut = -calculate_energy_consumption(gl, "hCovEOut")  # Cover convection
+    
+    # Thermal radiation to sky
+    # Long-wave radiation from all surfaces
     firOut = -calculate_energy_consumption(
         gl,
-        "rCovESky",
-        "rThScrSky",
-        "rBlScrSky",
-        "rCanSky",
-        "rPipeSky",
-        "rFlrSky",
-        "rLampSky",
+        "rCovESky",    # Cover to sky
+        "rThScrSky",   # Thermal screen to sky
+        "rBlScrSky",   # Blackout screen to sky
+        "rCanSky",     # Canopy to sky
+        "rPipeSky",    # Pipes to sky
+        "rFlrSky",     # Floor to sky
+        "rLampSky",    # Lamps to sky
     )
     lampIn = calculate_energy_consumption(gl, "qLampIn", "qIntLampIn")
     lampCool = -calculate_energy_consumption(gl, "hLampCool")

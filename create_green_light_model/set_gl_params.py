@@ -17,37 +17,97 @@ This code is licensed under the GNU GPLv3 License. For details, see the LICENSE 
 """
 
 import numpy as np
+
 class GreenLightParams:
     """
-    The GreenLightParams class is a comprehensive parameter setter for a greenhouse model. 
-    It configures a wide range of parameters including physical constants, thermodynamic properties, radiation factors,
-    material characteristics, greenhouse structural elements, plant canopy attributes, climate control settings, 
-    and various system-specific parameters for heating, lighting, ventilation, and crop growth.
-
+    Comprehensive parameter configuration for GreenLight greenhouse model.
+    
+    This class systematically sets all model parameters required for simulating
+    greenhouse climate dynamics, energy flows, and crop growth. Parameters are
+    grouped by category and include detailed units and references.
+    
+    The class uses a builder pattern where each method sets a specific
+    category of parameters. This organization makes it easy to:
+    - Modify specific parameter groups
+    - Validate parameter consistency
+    - Document parameter sources
+    - Support different greenhouse configurations
+    
+    Attributes:
+        gl (dict): GreenLight model dictionary to populate with parameters
+        p (dict): Reference to the parameter sub-dictionary gl['p']
+        
+    Parameter Categories:
+        - Physical constants: Universal constants used in calculations
+        - Thermodynamic: Heat and mass transfer properties
+        - Radiation: Light transmission and absorption characteristics
+        - Material: Physical properties of greenhouse components
+        - Structural: Greenhouse dimensions and geometry
+        - Plant/Canopy: Crop physiological parameters
+        - Climate control: Setpoints and control system parameters
+        - System-specific: Component-specific parameters
     """
     
     def __init__(self, gl):
+        """
+        Initialize parameter setter with model dictionary.
+        
+        Args:
+            gl (dict): GreenLight model dictionary to configure
+        """
         self.gl = gl
-        self.p = gl["p"]
+        self.p = gl["p"]  # Direct reference to parameter dictionary
 
     def set_physical_constants(self):
-        """Set physical constants in the model."""
-        self.p["sigma"] = 5.67e-8  # Stefan-Boltzmann constant [W m^{-2} K^{-4}]
-        self.p["g"]        = 9.81     # Acceleration of gravity [m s^{-2}]
-        self.p["R"]        = 8314     # Molar gas constant [J kmol^{-1} K^{-1}]
+        """
+        Set universal physical constants used throughout the model.
+        
+        These constants are fundamental to physics calculations including:
+        - Radiation heat transfer (Stefan-Boltzmann)
+        - Hydrostatic pressure (gravity)
+        - Gas properties (universal gas constant)
+        """
+        # Stefan-Boltzmann constant for thermal radiation calculations
+        self.p["sigma"] = 5.67e-8  # [W m^-2 K^-4]
+        
+        # Standard acceleration due to gravity
+        self.p["g"] = 9.81  # [m s^-2]
+        
+        # Universal gas constant for ideal gas calculations
+        self.p["R"] = 8314  # [J kmol^-1 K^-1]
 
     def set_thermodynamic_params(self):
-        """Set thermodynamic parameters in the model."""
-        self.p["L"]        = 2.45e6   # Latent heat of evaporation [J kg^{-1}{water}]
-        self.p["gamma"]    = 65.8     # Psychrometric constant [Pa K^{-1}]
-        self.p["cPAir"]    = 1e3      # Specific heat capacity of air [J K^{-1} kg^{-1}]
-        self.p["cPSteel"]  = 0.64e3   # Specific heat capacity of steel [J K^{-1} kg^{-1}]
-        self.p["cPWater"]  = 4.18e3   # Specific heat capacity of water [J K^{-1} kg^{-1}]
+        """
+        Set thermodynamic properties for heat and mass transfer calculations.
+        
+        These parameters are essential for:
+        - Latent heat calculations (evaporation/condensation)
+        - Psychrometric calculations (humidity)
+        - Sensible heat storage in materials
+        """
+        # Latent heat of water vaporization at standard conditions
+        self.p["L"] = 2.45e6  # [J kg^-1{water}]
+        
+        # Psychrometric constant for humidity calculations
+        self.p["gamma"] = 65.8  # [Pa K^-1]
+        
+        # Specific heat capacities for energy balance
+        self.p["cPAir"] = 1e3     # Air [J K^-1 kg^-1]
+        self.p["cPSteel"] = 0.64e3  # Steel structures [J K^-1 kg^-1]
+        self.p["cPWater"] = 4.18e3  # Water (pipes) [J K^-1 kg^-1]
 
     def set_radiation_params(self):
-        """Set radiation-related parameters in the model."""
-        self.p["etaGlobNir"] = 0.5    # Ratio of NIR in global radiation [-]
-        self.p["etaGlobPar"] = 0.5    # Ratio of PAR in global radiation [-]
+        """
+        Set solar radiation distribution and conversion parameters.
+        
+        These parameters define how incoming solar radiation is:
+        - Split between PAR and NIR wavelengths
+        - Converted between different units
+        - Used for photosynthesis calculations
+        """
+        # Global radiation wavelength distribution
+        self.p["etaGlobNir"] = 0.5  # NIR fraction of global radiation [-]
+        self.p["etaGlobPar"] = 0.5  # PAR fraction of global radiation [-]
         self.p["epsCan"]     = 1      # FIR emission coefficient of canopy [-]
         self.p["epsSky"]     = 1      # FIR emission coefficient of the sky [-]
         self.p["rhoCanPar"]  = 0.07   # PAR reflection coefficient [-]

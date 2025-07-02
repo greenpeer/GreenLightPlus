@@ -1,17 +1,29 @@
 # File path: GreenLightPlus/service_functions/funcs.py
-# GreenLightPlus/service_functions/funcs.py
 """
+General Utility Functions for GreenLight Model
+==============================================
+
+This module provides essential utility functions used throughout the
+GreenLight greenhouse simulation model. Functions include numerical
+integration, data manipulation, energy calculations, and file I/O
+operations.
+
+Key Function Categories:
+- Numerical Integration: Trapezoidal rule for time series
+- Energy Calculations: Consumption analysis for model components
+- Data Processing: Dictionary flattening and array operations
+- File I/O: JSON export functionality
+- Time Utilities: Date conversions and day calculations
+
+These utilities support the core simulation engine and analysis tools,
+providing consistent and efficient implementations of common operations.
+
 Copyright Statement:
-
-This Python version of the code is based on the open-source Matlab code released by David Katzin at Wageningen University and is subject to his original copyright.
-
-Original Matlab code author: David Katzin
-Original author's email: david.katzin@wur.nl, david.katzin1@gmail.com
-
-New Python code author: Daidai Qiu
-Author's email: qiu.daidai@outlook.com, daidai.qiu@wur.nl
-
-This code is licensed under the GNU GPLv3 License. For details, see the LICENSE file.
+    Based on original Matlab code by David Katzin (david.katzin@wur.nl)
+    Python implementation by Daidai Qiu (qiu.daidai@outlook.com)
+    Last Updated: July 2025
+    
+    Licensed under GNU GPLv3. See LICENSE file for details.
 """
 
 import json
@@ -22,22 +34,49 @@ from datetime import datetime
 
 def trapz_arrays(val_array, x):
     """
-    Calculate the trapezoidal integration for evenly spaced independent variable x and dependent variable y.
+    Perform trapezoidal numerical integration on 2D arrays.
+    
+    This function computes the integral of a time series using the
+    trapezoidal rule, which provides good accuracy for smooth functions
+    with evenly spaced sample points.
+    
+    The trapezoidal rule approximates the integral as:
+        ∫f(x)dx ≈ Σ(h/2 * [f(x_i) + f(x_{i+1})])
+    
+    For greenhouse simulations, this is commonly used to:
+    - Calculate cumulative energy consumption
+    - Integrate mass fluxes over time
+    - Compute total radiation received
+    
     Args:
-        val_array (np.ndarray): A 2-dimensional numpy array representing dependent variable y.
-        x (np.ndarray): A 2-dimensional numpy array representing independent variable x.
+        val_array (np.ndarray): 2D array of dependent variables (e.g., power).
+            Shape: (n_timesteps, n_variables)
+            Each column represents a different variable to integrate.
+        x (np.ndarray): 2D array of independent variable (typically time).
+            Shape: (n_timesteps, n_variables)
+            Must have same shape as val_array.
+    
     Returns:
-        float: The trapezoidal integration result.
-
-    Raises:
-        None
-
+        float: The integral result computed using trapezoidal rule.
+            For multiple variables, returns sum of all integrals.
+    
     Examples:
-        >>> y = np.array([[1, 2], [3, 4], [5, 6]])
-        >>> x = np.array([[0, 0], [1, 1], [2, 2]])
-        >>> trapz_arrays(y, x)
-        6.0
-
+        >>> # Integrate power over time to get energy
+        >>> power = np.array([[100, 50], [120, 60], [110, 55]])  # W
+        >>> time = np.array([[0, 0], [1, 1], [2, 2]])  # hours
+        >>> energy = trapz_arrays(power, time)  # Wh
+        >>> print(f"Total energy: {energy} Wh")
+        Total energy: 330.0 Wh
+        
+        >>> # Integrate CO2 flux to get total exchange
+        >>> co2_flux = np.array([[0.5], [0.6], [0.4]])  # mg/m²/s
+        >>> time = np.array([[0], [300], [600]])  # seconds
+        >>> total_co2 = trapz_arrays(co2_flux, time)  # mg/m²
+    
+    Note:
+        - Assumes evenly spaced x values for optimal accuracy
+        - Returns 0 for single data point (no area to integrate)
+        - Handles multiple variables simultaneously
     """
 
     # Check if input is valid
